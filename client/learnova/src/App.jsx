@@ -6,21 +6,33 @@ import PublicLayout   from './public-site/layouts/PublicLayout';
 import Landing        from './public-site/pages/Landing';
 import CourseCatalog  from './public-site/pages/CourseCatalog';
 import CourseDetail   from './public-site/pages/CourseDetail';
+import SignUp         from './public-site/pages/SignUp';
+import Login          from './public-site/pages/Login';
 
 // ─── Student Dashboard ─────────────────────────────────────────────────────────
-// (empty — will be wired up in the next phase)
-
-// ─── Admin Panel ───────────────────────────────────────────────────────────────
-// (empty — will be wired up in a later phase)
+import StudentDashboardLayout from './student-dashboard/layouts/StudentDashboardLayout';
+import Overview               from './student-dashboard/pages/Overview';
+import Profile                from './student-dashboard/pages/Profile';
+import Assignments            from './student-dashboard/pages/Assignments';
 
 export default function App() {
   return (
     <Routes>
       {/* ── Public Routes ── */}
       <Route element={<PublicLayout />}>
-        <Route path="/"           element={<Landing />} />
-        <Route path="/courses"    element={<CourseCatalog />} />
+        <Route path="/"            element={<Landing />} />
+        <Route path="/courses"     element={<CourseCatalog />} />
         <Route path="/courses/:id" element={<CourseDetail />} />
+        <Route path="/signup"      element={<SignUp />} />
+        <Route path="/login"       element={<Login />} />
+      </Route>
+
+      {/* ── Student Dashboard Routes ── */}
+      <Route path="/student" element={<StudentDashboardLayout />}>
+        <Route index                      element={<Navigate to="/student/dashboard" replace />} />
+        <Route path="dashboard"           element={<Overview />} />
+        <Route path="profile"             element={<Profile />} />
+        <Route path="assignments"         element={<Assignments />} />
       </Route>
 
       {/* Catch-all → home */}

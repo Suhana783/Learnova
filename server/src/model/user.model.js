@@ -22,11 +22,26 @@ const userSchema = new mongoose.Schema(
             required: true,
         },
 
+        phone: {
+            type: String,
+            trim: true,
+        },
+
+        address: {
+            type: String,
+            trim: true,
+        },
+
+        interestedIn: {
+            type: String,
+            trim: true,
+        },
+
         role: {
             type: String,
             enum: ['user', 'admin'],
             lowercase: true,
-            required: true
+            default: 'user',
         },
 
         otp: {

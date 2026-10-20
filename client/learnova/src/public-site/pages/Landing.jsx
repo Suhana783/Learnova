@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -14,9 +14,44 @@ import {
 } from 'lucide-react';
 import heroBanner from '../../assets/Gemini_Generated_Image_dqddhndqddhndqdd.png';
 import CourseCard from '../components/CourseCard';
-import courses from '../data/courses';
+import { getCourses } from '../../services/courseServices';
 
 export default function Landing() {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const res = await getCourses();
+        if (isMounted) {
+          const list = Array.isArray(res.data?.data)
+            ? res.data.data
+            : Array.isArray(res.data)
+            ? res.data
+            : [];
+          setCourses(list);
+        }
+      } catch (err) {
+        console.error('Failed to load courses on landing:', err);
+        if (isMounted) {
+          setError(err.message || 'Failed to load courses');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCourses();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   return (
     <div className="flex-1 flex flex-col bg-navy-900 text-gray-100">
       {/* ========================================================================= */}
@@ -38,7 +73,7 @@ export default function Landing() {
             title="Browse Courses"
           />
           <Link
-            to="/login"
+            to="/signup"
             aria-label="Get Started"
             className="absolute top-[54.5%] left-[52.4%] w-[10.6%] h-[7.2%] rounded-xl cursor-pointer transition-all hover:ring-2 hover:ring-accent-400/60 focus:outline-none focus:ring-2 focus:ring-accent-400"
             title="Get Started"
@@ -156,25 +191,62 @@ export default function Landing() {
             </Link>
           </div>
 
-          {/* Real Curated Course Cards - Compact preview grid for Home Page */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course) => (
-              <CourseCard
-                key={course.id}
-                id={course.id}
-                title={course.title}
-                category={course.category}
-                description={course.description}
-                difficulty={course.difficulty}
-                rating={course.rating}
-                icon={course.icon}
-                image={course.image}
-                resources={course.resources}
-                duration={course.duration}
-                compact={true}
-              />
-            ))}
-          </div>
+          {/* Dynamic Curated Course Cards - Compact preview grid for Home Page */}
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div
+                  key={n}
+                  className="rounded-2xl bg-navy-800/70 border border-navy-700/60 p-4 animate-pulse flex flex-col justify-between h-96"
+                >
+                  <div>
+                    <div className="w-full h-44 bg-navy-950/80 rounded-xl mb-4" />
+                    <div className="h-4 w-24 bg-navy-700/70 rounded-full mb-3" />
+                    <div className="h-6 w-3/4 bg-navy-700/80 rounded mb-2" />
+                    <div className="h-3.5 w-full bg-navy-700/40 rounded mb-1.5" />
+                    <div className="h-3.5 w-2/3 bg-navy-700/40 rounded" />
+                  </div>
+                  <div className="pt-3 border-t border-navy-700/60">
+                    <div className="h-9 w-full bg-navy-700/60 rounded-xl" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : courses.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {courses.slice(0, 4).map((course) => (
+                <CourseCard
+                  key={course._id || course.id}
+                  id={course._id || course.id}
+                  title={course.title}
+                  category={course.category}
+                  description={course.shortDescription || course.description}
+                  difficulty={course.level || course.difficulty || 'Beginner'}
+                  rating={course.rating?.average > 0 ? course.rating.average : (course.rating || 4.9)}
+                  icon={course.tags?.[0] || (course.title?.includes('HTML') ? 'HTML5' : course.title?.includes('CSS') ? 'CSS3' : course.title?.includes('JavaScript') ? 'JS' : course.title?.includes('React') ? 'React' : '')}
+                  image={course.thumbnail?.url || course.image}
+                  resources={{
+                    videoUrl: course.curriculum?.playlistUrl || course.resources?.find((r) => r.type === 'video')?.url,
+                    videoType: course.curriculum?.playlistUrl?.includes('list=') ? 'playlist' : 'single',
+                    notesUrl: course.resources?.find((r) => r.type === 'notes')?.url || course.resources?.[0]?.url,
+                  }}
+                  duration={
+                    course.duration?.displayLabel ||
+                    (course.duration?.value
+                      ? `${course.duration.value} ${course.duration.unit}`
+                      : course.curriculum?.playlistUrl
+                      ? 'Full Playlist'
+                      : 'Complete Course')
+                  }
+                  compact={true}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-navy-800 bg-navy-900/60 p-8 text-center text-gray-400">
+              <p>Courses are being updated. Please check back shortly.</p>
+            </div>
+          )}
 
           {/* Centered Button Linking to /courses */}
           <div className="text-center mt-14">
@@ -326,13 +398,22 @@ export default function Landing() {
           <p className="text-gray-300 text-base sm:text-lg max-w-xl mx-auto mb-10 leading-relaxed font-normal">
             Join thousands of learners taking their skills seriously.
           </p>
-          <Link
-            to="/courses"
-            className="inline-flex items-center gap-2 px-9 py-4 rounded-xl bg-accent-500 hover:bg-accent-600 text-navy-950 font-semibold text-base transition-all duration-200 shadow-xl shadow-accent-500/25 active:scale-[0.98]"
-          >
-            <span>Browse Courses</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              to="/courses"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-navy-850 hover:bg-navy-800 border border-navy-700 text-white font-semibold text-base transition-all duration-200 active:scale-[0.98]"
+            >
+              <span>Browse Courses</span>
+              <ArrowRight className="w-4 h-4 text-accent-400" />
+            </Link>
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-navy-950 font-semibold text-base transition-all duration-200 shadow-xl shadow-accent-500/25 active:scale-[0.98]"
+            >
+              <span>Create Student Account</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

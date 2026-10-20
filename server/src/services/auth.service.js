@@ -6,31 +6,47 @@ const { createAccessToken, createRefreshToken } = require('../../utils/token');
 const { refreshTokenSecret } = require('../config/secrets');
 
 const registerUserService = async (userData) => {
-    const {name, email, password, role} = userData;
+    const { name, email, password, phone, address, interestedIn, role = 'user' } = userData;
 
-    const existingUser = await User.findOne({email});
-
-    if (existingUser) {
-        throw new Error('Email already exists');
-    }
+    const existingUser = await User.findOne({ email });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = Date.now() + 18 * 60 * 1000; 
+    const otpExpiry = Date.now() + 18 * 60 * 1000;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        role,
-        otp,
-        otpExpiry,
-    });
+    let user;
+    if (existingUser) {
+        if (existingUser.isVerified) {
+            throw new Error('Email already registered. Please log in.');
+        }
+        // If pending verification, update info and send new OTP
+        existingUser.name = name;
+        existingUser.password = hashedPassword;
+        existingUser.phone = phone || existingUser.phone;
+        existingUser.address = address || existingUser.address;
+        existingUser.interestedIn = interestedIn || existingUser.interestedIn;
+        existingUser.role = role || existingUser.role;
+        existingUser.otp = otp;
+        existingUser.otpExpiry = otpExpiry;
+        user = await existingUser.save();
+    } else {
+        user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            phone,
+            address,
+            interestedIn,
+            role: role || 'user',
+            otp,
+            otpExpiry,
+        });
+    }
 
     await sendOTPEmail(email, otp);
 
     return {
-        message: 'User created and OTP sent',
+        message: 'OTP sent to your email address',
         userId: user._id,
     };
 };
@@ -61,6 +77,9 @@ const loginUserService = async ({email, password}) => {
             id: user._id,
             name: user.name,
             email: user.email,
+            phone: user.phone || '',
+            address: user.address || '',
+            interestedIn: user.interestedIn || '',
             role: user.role,
         },
     };
@@ -105,9 +124,26 @@ const verifyOTPService = async ({email, otp}) => {
     user.otp = undefined;
     user.otpExpiry = undefined;
 
+    const accessToken = createAccessToken(user);
+    const refreshToken = createRefreshToken(user);
+    user.refreshToken = refreshToken;
+
     await user.save();
 
-    return {message: 'User verified successfully'};
+    return {
+        message: 'Registration verified and account created successfully',
+        accessToken,
+        refreshToken,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '',
+            address: user.address || '',
+            interestedIn: user.interestedIn || '',
+            role: user.role,
+        },
+    };
 };
 
 module.exports = {

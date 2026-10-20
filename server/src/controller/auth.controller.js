@@ -19,7 +19,7 @@ exports.registerUser = async (req, res, next) => {
 exports.verifyOTP = async (req, res, next) => {
     try {
         const result = await verifyOTPService(req.body);
-        res.status(200).json({success: true, message: result.message});
+        res.status(200).json({success: true, ...result});
     } catch (error) {
         error.statusCode = error.statusCode || 400;
         next(error);

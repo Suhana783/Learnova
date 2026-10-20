@@ -23,6 +23,8 @@ export default function CourseCard({
   const isPlaylist = resources?.videoType === 'playlist';
   const displayDuration =
     duration || (isPlaylist ? 'Full Playlist' : 'Single Video');
+  const displayRating =
+    typeof rating === 'number' && rating > 0 ? rating.toFixed(1) : '4.9';
 
   // =========================================================================
   // COMPACT VARIANT (Used on Home Page / Previews)
@@ -41,6 +43,9 @@ export default function CourseCard({
               <img
                 src={image}
                 alt={title}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
                 className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
               />
               {icon && (
@@ -74,7 +79,7 @@ export default function CourseCard({
               <div className="flex items-center gap-1 text-xs text-amber-400 bg-navy-900 border border-navy-700/70 px-2 py-0.5 rounded-full">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                 <span className="font-semibold text-gray-200">
-                  {typeof rating === 'number' ? rating.toFixed(1) : rating}
+                  {displayRating}
                 </span>
               </div>
             </div>
@@ -132,6 +137,9 @@ export default function CourseCard({
             <img
               src={image}
               alt={title}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
             />
             {icon && (
@@ -167,7 +175,7 @@ export default function CourseCard({
             <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-navy-900 border border-navy-700/80 px-3 py-1 rounded-full">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span className="font-semibold text-gray-200">
-                {typeof rating === 'number' ? rating.toFixed(1) : rating}
+                {displayRating}
               </span>
             </div>
           </div>

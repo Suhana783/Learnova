@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { Menu, X, ArrowRight } from 'lucide-react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Menu, X, ArrowRight, LayoutDashboard, User, LogOut } from 'lucide-react';
 import LearnovaLogo from '../../shared/components/LearnovaLogo';
+import { useAuth } from '../../shared/context/AuthContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    logout();
+    navigate('/');
+  };
 
   const navLinkClasses = ({ isActive }) =>
     `text-sm font-medium transition-colors duration-200 ${
@@ -28,28 +36,58 @@ export default function Navbar() {
             <NavLink to="/courses" className={navLinkClasses}>
               Courses
             </NavLink>
+            {isAuthenticated && (
+              <NavLink to="/student/dashboard" className={navLinkClasses}>
+                Student Dashboard
+              </NavLink>
+            )}
           </nav>
 
-          {/* Right Action Buttons: Log In, Sign In, Explore Courses */}
+          {/* Right Action Buttons */}
           <div className="hidden md:flex items-center gap-2 sm:gap-3">
-            <Link
-              to="/login"
-              className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-navy-800/50"
-            >
-              Log In
-            </Link>
-            <Link
-              to="/login"
-              className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-navy-800/50"
-            >
-              Sign In
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/student/dashboard"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-gray-200 hover:text-white bg-navy-900 border border-navy-750 px-3.5 py-2 rounded-xl transition-colors"
+                >
+                  <div className="w-5 h-5 rounded-full bg-accent-500 text-navy-950 text-xs font-bold flex items-center justify-center">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'S'}
+                  </div>
+                  <span>{user?.name || 'Dashboard'}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="text-xs font-medium text-gray-400 hover:text-red-400 p-2 rounded-lg hover:bg-navy-900 transition-colors cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-gray-300 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-navy-800/50"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="text-sm font-semibold text-navy-950 bg-accent-500 hover:bg-accent-600 transition-colors px-4 py-2 rounded-xl shadow-sm hover:shadow-accent-500/20 active:scale-[0.98]"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+
             <Link
               to="/courses"
-              className="inline-flex items-center gap-1.5 bg-accent-500 hover:bg-accent-600 text-navy-950 font-medium text-sm px-4 py-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-accent-500/20 active:scale-[0.98] ml-1"
+              className="inline-flex items-center gap-1.5 bg-navy-850 hover:bg-navy-800 border border-navy-700 text-gray-200 hover:text-white font-medium text-sm px-3.5 py-2 rounded-xl transition-all duration-200 ml-1"
             >
-              <span>Explore Courses</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Explore</span>
+              <ArrowRight className="w-4 h-4 text-accent-400" />
             </Link>
           </div>
 
@@ -85,33 +123,52 @@ export default function Navbar() {
             >
               Course Catalog
             </NavLink>
+            {isAuthenticated && (
+              <NavLink
+                to="/student/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-md text-base font-medium text-accent-400 hover:bg-navy-800"
+              >
+                Student Dashboard
+              </NavLink>
+            )}
           </nav>
 
           <div className="pt-3 border-t border-navy-800 flex flex-col gap-2">
-            <div className="grid grid-cols-2 gap-2">
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2.5 text-sm font-medium text-gray-200 hover:text-white rounded-lg bg-navy-800/60"
-              >
-                Log In
-              </Link>
-              <Link
-                to="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-center py-2.5 text-sm font-medium text-gray-200 hover:text-white rounded-lg bg-navy-800/60"
-              >
-                Sign In
-              </Link>
-            </div>
-            <Link
-              to="/courses"
-              onClick={() => setMobileMenuOpen(false)}
-              className="inline-flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-accent-500 text-navy-950 rounded-lg hover:bg-accent-600 font-semibold"
-            >
-              <span>Explore Courses</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center justify-between p-2 rounded-lg bg-navy-950/80">
+                <div className="text-xs">
+                  <p className="font-semibold text-white">{user?.name}</p>
+                  <p className="text-gray-400">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-xs text-red-400 hover:text-red-300 font-semibold px-2 py-1"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-center py-2.5 text-sm font-medium text-gray-200 hover:text-white rounded-lg bg-navy-800/60"
+                >
+                  Log In
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-center py-2.5 text-sm font-semibold text-navy-950 bg-accent-500 rounded-lg hover:bg-accent-600"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

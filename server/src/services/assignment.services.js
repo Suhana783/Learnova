@@ -7,10 +7,8 @@ const uploadAssignmentService = async (assignmentData) => {
     return assignment;
 };
 
-const getAssignmentsService = async () => {
-
-    const assignments = await Assignment.find();
-
+const getAssignmentsService = async (filter = {}) => {
+    const assignments = await Assignment.find(filter).sort({ createdAt: -1 });
     return assignments;
 };
 
