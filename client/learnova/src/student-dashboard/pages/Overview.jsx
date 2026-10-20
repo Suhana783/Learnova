@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/context/AuthContext';
 import { getAssignments } from '../../services/assignmentService';
+import { getAllProgress, enrollInCourse, getContinueLearning } from '../../services/progressService';
+import { getCourses } from '../../services/courseServices';
 import {
   Sparkles,
   FileUp,
@@ -9,18 +11,128 @@ import {
   CheckCircle2,
   BookOpen,
   ArrowRight,
-  Clock,
   ExternalLink,
-  ShieldAlert,
+  Trophy,
+  PlayCircle,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
+// ─── CourseProgressCard ────────────────────────────────────────────────────────
+function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
+  const navigate = useNavigate();
+  const hasProgress = !!progress;
+  const percent = progress?.percentComplete ?? 0;
+  const completed = progress?.completedLessons ?? 0;
+  const total = progress?.totalLessons ?? 0;
+  const isFinished = progress?.isCourseCompleted ?? false;
+  const thumbnail = course.thumbnail?.url || course.image;
+
+  const handleContinue = async () => {
+    if (!hasProgress) return;
+    try {
+      const res = await getContinueLearning(course._id);
+      const data = res.data?.data;
+      navigate(`/student/learn/${course._id}`);
+    } catch {
+      navigate(`/student/learn/${course._id}`);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl bg-navy-950/70 border border-navy-800/80 overflow-hidden flex flex-col">
+      {/* Thumbnail */}
+      <div className="relative w-full h-36 bg-navy-900 flex items-center justify-center overflow-hidden">
+        {thumbnail ? (
+          <img
+            src={thumbnail}
+            alt={course.title}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            className="w-full h-full object-contain p-3"
+          />
+        ) : (
+          <BookOpen className="w-10 h-10 text-navy-700" />
+        )}
+        {isFinished && (
+          <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[10px] font-semibold">
+            <Trophy className="w-3 h-3" />
+            Completed
+          </div>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="text-sm font-bold text-white leading-snug mb-1 line-clamp-2">
+          {course.title}
+        </h3>
+        <p className="text-xs text-gray-400 mb-3">{course.category} · {course.level}</p>
+
+        {hasProgress ? (
+          <>
+            {/* Progress bar */}
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+              <span>{completed} / {total} lessons</span>
+              <span className="font-semibold text-accent-400">{percent}%</span>
+            </div>
+            <div className="w-full bg-navy-800 rounded-full h-1.5 overflow-hidden mb-4">
+              <div
+                className="h-full bg-accent-500 rounded-full transition-all duration-500"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+
+            <button
+              onClick={handleContinue}
+              className="mt-auto w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-accent-500 hover:bg-accent-600 text-navy-950 text-xs font-semibold transition-all shadow-sm"
+            >
+              <PlayCircle className="w-3.5 h-3.5" />
+              <span>{isFinished ? 'Review Course' : 'Continue Learning'}</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex-1" />
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => onEnroll(course._id)}
+                disabled={enrolling === course._id}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-navy-800 hover:bg-navy-700 border border-navy-700 text-xs font-semibold text-gray-200 transition-all disabled:opacity-60"
+              >
+                {enrolling === course._id ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <BookOpen className="w-3.5 h-3.5 text-accent-400" />
+                )}
+                <span>{enrolling === course._id ? 'Starting...' : 'Start Course'}</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Overview ─────────────────────────────────────────────────────────────
 export default function Overview() {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(true);
+  const [courses, setCourses] = useState([]);
+  const [progressMap, setProgressMap] = useState({}); // courseId → progress summary
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [coursesError, setCoursesError] = useState(null);
+  const [enrolling, setEnrolling] = useState(null); // courseId being enrolled
 
+  // Profile completion
+  const profileFields = [user?.name, user?.email, user?.phone, user?.address, user?.interestedIn];
+  const filledFields = profileFields.filter(Boolean).length;
+  const profileCompletion = Math.round((filledFields / profileFields.length) * 100);
+
+  // Fetch assignments
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetch = async () => {
       try {
         if (user?.email) {
           const res = await getAssignments({ studentEmail: user.email });
@@ -32,13 +144,67 @@ export default function Overview() {
         setLoadingAssignments(false);
       }
     };
-    fetchStudentData();
+    fetch();
   }, [user?.email]);
 
-  // Profile completion calculation based strictly on real fields
-  const profileFields = [user?.name, user?.email, user?.phone, user?.address, user?.interestedIn];
-  const filledFields = profileFields.filter(Boolean).length;
-  const profileCompletion = Math.round((filledFields / profileFields.length) * 100);
+  // Fetch courses + progress
+  useEffect(() => {
+    const fetchCoursesAndProgress = async () => {
+      try {
+        setLoadingCourses(true);
+        setCoursesError(null);
+
+        const [coursesRes, progressRes] = await Promise.all([
+          getCourses({ limit: 20 }),
+          getAllProgress(),
+        ]);
+
+        const allCourses = coursesRes.data?.data || [];
+        const allProgress = progressRes.data?.data || [];
+
+        setCourses(allCourses);
+
+        // Build a lookup map by courseId
+        const map = {};
+        for (const p of allProgress) {
+          if (p.courseId) {
+            map[p.courseId.toString()] = p;
+          }
+        }
+        setProgressMap(map);
+      } catch (err) {
+        console.error('Failed to load courses/progress:', err);
+        setCoursesError('Failed to load courses. Please refresh.');
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    fetchCoursesAndProgress();
+  }, []);
+
+  const handleEnroll = async (courseId) => {
+    try {
+      setEnrolling(courseId);
+      // Enroll
+      await enrollInCourse(courseId);
+      // Refresh progress so the card shows "Continue Learning"
+      const progressRes = await getAllProgress();
+      const allProgress = progressRes.data?.data || [];
+      const map = {};
+      for (const p of allProgress) {
+        if (p.courseId) map[p.courseId.toString()] = p;
+      }
+      setProgressMap(map);
+    } catch (err) {
+      console.error('Enrollment failed:', err);
+    } finally {
+      setEnrolling(null);
+    }
+  };
+
+  // Separate courses into: in-progress + not-started
+  const startedCourses = courses.filter((c) => progressMap[c._id?.toString()]);
+  const notStartedCourses = courses.filter((c) => !progressMap[c._id?.toString()]);
 
   return (
     <div className="space-y-6">
@@ -54,10 +220,9 @@ export default function Overview() {
           </h2>
           <p className="mt-2 text-sm text-gray-300 leading-relaxed">
             {user?.interestedIn
-              ? `Your chosen focus area is ${user.interestedIn}. Access your course materials, track your progress, and upload assignments below.`
-              : 'Access your course materials, track your progress, and upload assignments below.'}
+              ? `Your chosen focus area is ${user.interestedIn}. Pick up where you left off.`
+              : 'Access your course materials, track your progress, and continue learning.'}
           </p>
-
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/student/assignments"
@@ -77,9 +242,9 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* Real Statistics Grid (NO fake data) */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Real Submissions Count */}
+        {/* Assignments Submitted */}
         <div className="p-5 rounded-2xl bg-navy-950/70 border border-navy-800/80">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -93,13 +258,29 @@ export default function Overview() {
             {loadingAssignments ? '...' : assignments.length}
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            {assignments.length === 0
-              ? 'No submissions yet'
-              : `${assignments.length} assignment${assignments.length > 1 ? 's' : ''} uploaded`}
+            {assignments.length === 0 ? 'No submissions yet' : `${assignments.length} uploaded`}
           </p>
         </div>
 
-        {/* Real Profile Completion */}
+        {/* Courses In Progress */}
+        <div className="p-5 rounded-2xl bg-navy-950/70 border border-navy-800/80">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Courses Started
+            </span>
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+              <BookOpen className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-3xl font-bold text-white font-display">
+            {loadingCourses ? '...' : startedCourses.length}
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            {startedCourses.filter((c) => progressMap[c._id]?.isCourseCompleted).length} completed
+          </p>
+        </div>
+
+        {/* Profile Completion */}
         <div className="p-5 rounded-2xl bg-navy-950/70 border border-navy-800/80">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -119,36 +300,95 @@ export default function Overview() {
             />
           </div>
         </div>
-
-        {/* Account Verification Status */}
-        <div className="p-5 rounded-2xl bg-navy-950/70 border border-navy-800/80">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Account Status
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl font-bold text-emerald-400 font-display flex items-center gap-2">
-            Verified Student
-          </div>
-          <p className="text-xs text-gray-400 mt-1">
-            OTP Verified & Active
-          </p>
-        </div>
       </div>
 
-      {/* Recent Submissions Section (Directly from Real API) */}
+      {/* ── My Courses Section ── */}
+      <div className="rounded-2xl bg-navy-950/70 border border-navy-800/80 p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="text-base font-bold text-white">My Courses</h3>
+            <p className="text-xs text-gray-400">Track your learning progress</p>
+          </div>
+          <Link
+            to="/courses"
+            className="text-xs text-accent-400 hover:text-accent-300 font-semibold inline-flex items-center gap-1"
+          >
+            <span>Browse All</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {loadingCourses ? (
+          <div className="py-10 flex items-center justify-center gap-2 text-gray-400 text-sm">
+            <Loader2 className="w-5 h-5 animate-spin text-accent-500" />
+            <span>Loading courses...</span>
+          </div>
+        ) : coursesError ? (
+          <div className="py-8 flex flex-col items-center gap-2 text-center">
+            <AlertCircle className="w-6 h-6 text-red-400" />
+            <p className="text-sm text-red-400">{coursesError}</p>
+          </div>
+        ) : (
+          <>
+            {/* Started / In-progress courses */}
+            {startedCourses.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+                  In Progress
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {startedCourses.map((course) => (
+                    <CourseProgressCard
+                      key={course._id}
+                      course={course}
+                      progress={progressMap[course._id?.toString()]}
+                      onEnroll={handleEnroll}
+                      enrolling={enrolling}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Not-started courses */}
+            {notStartedCourses.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+                  {startedCourses.length === 0 ? 'All Courses' : 'Available Courses'}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {notStartedCourses.map((course) => (
+                    <CourseProgressCard
+                      key={course._id}
+                      course={course}
+                      progress={null}
+                      onEnroll={handleEnroll}
+                      enrolling={enrolling}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {courses.length === 0 && (
+              <div className="py-10 px-4 text-center border border-dashed border-navy-800 rounded-xl bg-navy-900/30">
+                <BookOpen className="w-10 h-10 text-gray-500 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-300">No courses found</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Check your backend connection.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Recent Submissions */}
       <div className="rounded-2xl bg-navy-950/70 border border-navy-800/80 p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-bold text-white">
-              Recent Submissions
-            </h3>
-            <p className="text-xs text-gray-400">
-              Assignments uploaded to Cloudinary
-            </p>
+            <h3 className="text-base font-bold text-white">Recent Submissions</h3>
+            <p className="text-xs text-gray-400">Assignments uploaded to Cloudinary</p>
           </div>
           <Link
             to="/student/assignments"
@@ -166,11 +406,9 @@ export default function Overview() {
         ) : assignments.length === 0 ? (
           <div className="py-10 px-4 text-center border border-dashed border-navy-800 rounded-xl bg-navy-900/30">
             <FileUp className="w-10 h-10 text-gray-500 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-gray-300">
-              No assignments uploaded yet
-            </p>
+            <p className="text-sm font-semibold text-gray-300">No assignments uploaded yet</p>
             <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-              When you submit assignments, they will appear here with real Cloudinary download links and status.
+              When you submit assignments, they will appear here.
             </p>
             <Link
               to="/student/assignments"
@@ -202,7 +440,6 @@ export default function Overview() {
                     </span>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     {item.status || 'Submitted'}
@@ -212,7 +449,7 @@ export default function Overview() {
                     target="_blank"
                     rel="noreferrer"
                     className="p-2 rounded-lg bg-navy-800 hover:bg-navy-700 text-gray-300 hover:text-white transition-colors"
-                    title="View uploaded file on Cloudinary"
+                    title="View on Cloudinary"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </a>

@@ -19,6 +19,7 @@ app.use('/api/courses', require('./route/course.route'));
 app.use('/api/users', require('./route/user.route'));
 app.use('/api/enroll', require('./route/enroll.route'));
 app.use('/api/assignments', require('./route/assignment.route'));
+app.use('/api/progress', require('./route/progress.route'));
 
 // Error handler 
 app.use(require('./middlewares/error.middleware'));

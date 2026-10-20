@@ -14,6 +14,7 @@ import StudentDashboardLayout from './student-dashboard/layouts/StudentDashboard
 import Overview               from './student-dashboard/pages/Overview';
 import Profile                from './student-dashboard/pages/Profile';
 import Assignments            from './student-dashboard/pages/Assignments';
+import CourseLearning         from './student-dashboard/pages/CourseLearning';
 
 export default function App() {
   return (
@@ -34,6 +35,9 @@ export default function App() {
         <Route path="profile"             element={<Profile />} />
         <Route path="assignments"         element={<Assignments />} />
       </Route>
+
+      {/* ── Course Learning (fullscreen, outside dashboard layout) ── */}
+      <Route path="/student/learn/:courseId" element={<CourseLearning />} />
 
       {/* Catch-all → home */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -10,6 +10,7 @@ export default function StudentHeader({ onToggleMobile }) {
   const getPageTitle = () => {
     if (location.pathname.includes('/profile')) return 'My Profile';
     if (location.pathname.includes('/assignments')) return 'Assignment Submissions';
+    if (location.pathname.includes('/learn')) return 'Course Learning';
     return 'Dashboard Overview';
   };
 

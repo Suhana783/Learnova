@@ -10,6 +10,7 @@ import {
   Sparkles,
   ChevronRight,
   ShieldCheck,
+  BookOpen,
 } from 'lucide-react';
 import LearnovaLogo from '../../shared/components/LearnovaLogo';
 
