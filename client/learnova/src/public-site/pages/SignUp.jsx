@@ -204,7 +204,19 @@ export default function SignUp() {
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-500/15 border border-red-500/30 flex items-start gap-3 text-red-300 text-sm animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <div className="flex-1">
+                <p>{error}</p>
+                {error.toLowerCase().includes('already registered') && (
+                  <div className="mt-2">
+                    <Link
+                      to="/login"
+                      className="inline-flex items-center gap-1.5 text-accent-400 hover:text-accent-300 font-semibold underline underline-offset-2 transition-colors"
+                    >
+                      Log in here &rarr;
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

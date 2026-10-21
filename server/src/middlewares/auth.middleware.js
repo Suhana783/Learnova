@@ -3,9 +3,7 @@ const User = require('../model/user.model');
 const { accessTokenSecret } = require('../config/secrets');
 
 const authMiddleware = async (req, res, next) => {
-
     try {
-
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -27,12 +25,12 @@ const authMiddleware = async (req, res, next) => {
         }
 
         req.user = user;
-
         next();
-
     } catch (error) {
-        error.statusCode = error.statusCode || 401;
-        next(new Error('Invalid token'));
+        const isExpired = error.name === 'TokenExpiredError';
+        const err = new Error(isExpired ? 'Token expired' : 'Invalid token');
+        err.statusCode = 401;
+        next(err);
     }
 };
 

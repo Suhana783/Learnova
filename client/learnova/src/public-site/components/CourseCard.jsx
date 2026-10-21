@@ -1,15 +1,11 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, User, ArrowRight, Star, PlayCircle, Clock, Layers } from 'lucide-react';
+import { ArrowRight, Star, Clock, Layers } from 'lucide-react';
 
 export default function CourseCard({
   id = '1',
   title,
   category = 'Frontend Development',
-  instructor,
   description,
-  modules,
-  assignments,
   rating = 4.9,
   featured = false,
   difficulty,
@@ -20,11 +16,11 @@ export default function CourseCard({
   topics,
   compact = false,
 }) {
+  const courseLink = `/courses/${id}`;
+  const actionLabel = 'Explore Course';
   const isPlaylist = resources?.videoType === 'playlist';
-  const displayDuration =
-    duration || (isPlaylist ? 'Full Playlist' : 'Single Video');
-  const displayRating =
-    typeof rating === 'number' && rating > 0 ? rating.toFixed(1) : '4.9';
+  const displayDuration = duration || (isPlaylist ? 'Full Playlist' : 'Single Video');
+  const displayRating = typeof rating === 'number' && rating > 0 ? rating.toFixed(1) : '4.9';
 
   // =========================================================================
   // COMPACT VARIANT (Used on Home Page / Previews)
@@ -39,14 +35,14 @@ export default function CourseCard({
         <div>
           {/* Compact Top Image: Proportional & uncropped */}
           {image && (
-            <div className="relative w-full h-44 sm:h-48 overflow-hidden bg-navy-950/95 border-b border-navy-700/60 flex items-center justify-center p-3">
+            <div className="relative w-full h-44 sm:h-48 overflow-hidden bg-navy-950/95 border-b border-navy-700/60">
               <img
                 src={image}
                 alt={title}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}
-                className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 drop-shadow-md"
               />
               {icon && (
                 <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-navy-950/90 backdrop-blur-md border border-navy-700 text-[11px] font-bold text-accent-400 shadow-sm uppercase tracking-wider">
@@ -86,7 +82,7 @@ export default function CourseCard({
 
             {/* Title */}
             <h3 className="font-display text-lg sm:text-xl font-bold text-white group-hover:text-accent-400 transition-colors mb-2 leading-snug">
-              <Link to={`/courses/${id}`}>{title}</Link>
+              <Link to={courseLink}>{title}</Link>
             </h3>
 
             {/* Concise Description */}
@@ -110,10 +106,10 @@ export default function CourseCard({
           </div>
 
           <Link
-            to={`/courses/${id}`}
+            to={courseLink}
             className="w-full inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-navy-900 hover:bg-accent-500 text-gray-200 hover:text-navy-950 font-medium text-xs sm:text-sm border border-navy-700 hover:border-accent-500 transition-all duration-200 shadow-sm"
           >
-            <span>Explore Course</span>
+            <span>{actionLabel}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -133,14 +129,14 @@ export default function CourseCard({
       <div>
         {/* Top Image: Generous width & height, never cropped */}
         {image && (
-          <div className="relative w-full h-64 sm:h-72 lg:h-80 overflow-hidden bg-navy-950/95 border-b border-navy-700/60 flex items-center justify-center p-4 sm:p-6">
+          <div className="relative w-full h-64 sm:h-72 lg:h-80 overflow-hidden bg-navy-950/95 border-b border-navy-700/60">
             <img
               src={image}
               alt={title}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
-              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
             />
             {icon && (
               <div className="absolute top-4 right-4 px-3 py-1 rounded-xl bg-navy-950/95 backdrop-blur-md border border-navy-700 text-xs font-bold text-accent-400 shadow-md uppercase tracking-wider">
@@ -182,7 +178,7 @@ export default function CourseCard({
 
           {/* Large Editorial Title */}
           <h3 className="font-display text-2xl sm:text-3xl font-bold text-white group-hover:text-accent-400 transition-colors mb-3 leading-snug">
-            <Link to={`/courses/${id}`}>{title}</Link>
+            <Link to={courseLink}>{title}</Link>
           </h3>
 
           {/* Rich Description */}
@@ -214,7 +210,7 @@ export default function CourseCard({
         {/* Two-Column Metadata Stats: Level & Duration */}
         <div className="grid grid-cols-2 gap-4 py-1 mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-navy-900 border border-navy-700/80 flex items-center justify-center text-accent-500 flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-navy-900 border border-navy-700/80 flex items-center justify-center text-accent-500 shrink-0">
               <Layers className="w-5 h-5" />
             </div>
             <div>
@@ -226,7 +222,7 @@ export default function CourseCard({
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-navy-900 border border-navy-700/80 flex items-center justify-center text-accent-500 flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-navy-900 border border-navy-700/80 flex items-center justify-center text-accent-500 shrink-0">
               <Clock className="w-5 h-5" />
             </div>
             <div>
@@ -240,10 +236,10 @@ export default function CourseCard({
 
         {/* Pill-shaped Action Button */}
         <Link
-          to={`/courses/${id}`}
+          to={courseLink}
           className="inline-flex items-center justify-center gap-2.5 py-3 px-6 rounded-2xl border-2 border-accent-500/80 hover:border-accent-500 text-accent-400 hover:bg-accent-500 hover:text-navy-950 font-bold text-sm sm:text-base transition-all duration-200 shadow-md active:scale-[0.99] w-full sm:w-auto"
         >
-          <span>Explore Course</span>
+          <span>{actionLabel}</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

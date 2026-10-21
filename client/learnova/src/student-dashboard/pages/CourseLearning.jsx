@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -38,6 +38,7 @@ function ModulePanel({
   lessonProgress,
   currentLessonId,
   onSelectLesson,
+  selectingLessonId,
 }) {
   const completedCount = mod.lessons.filter((l) =>
     lessonProgress[l._id]?.isCompleted
@@ -55,7 +56,7 @@ function ModulePanel({
             {completedCount}/{mod.lessons.length} lessons completed
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+        <div className="flex items-center gap-2 shrink-0 ml-3">
           {completedCount === mod.lessons.length && mod.lessons.length > 0 && (
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           )}
@@ -78,16 +79,19 @@ function ModulePanel({
             return (
               <button
                 key={lesson._id}
-                onClick={() => onSelectLesson(mod, lesson)}
+                onClick={() => onSelectLesson(lesson)}
+                disabled={selectingLessonId === lesson._id}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${
                   isActive
                     ? 'bg-accent-500/10 border-l-2 border-accent-500'
                     : 'hover:bg-navy-800/60 border-l-2 border-transparent'
-                }`}
+                } ${selectingLessonId === lesson._id ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+                <div className="shrink-0 w-6 h-6 flex items-center justify-center">
                   {isDone ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  ) : selectingLessonId === lesson._id ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-accent-400" />
                   ) : isStarted ? (
                     <PlayCircle className="w-5 h-5 text-accent-400" />
                   ) : (
@@ -120,12 +124,10 @@ function ModulePanel({
 // ─── Main CourseLearning Page ────────────────────────────────────────────────
 export default function CourseLearning() {
   const { courseId } = useParams();
-  const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
 
   const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(null);
-  const [lessonProgress, setLessonProgress] = useState({}); // { lessonId: lessonProgressEntry }
+  const [lessonProgress, setLessonProgress] = useState({});
   const [summary, setSummary] = useState(null);
 
   const [selectedModule, setSelectedModule] = useState(null);
@@ -138,13 +140,9 @@ export default function CourseLearning() {
   const [completingLesson, setCompletingLesson] = useState(false);
   const [completionError, setCompletionError] = useState(null);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [lessonStartError, setLessonStartError] = useState(null);
+  const [selectingLessonId, setSelectingLessonId] = useState(null);
 
-  // Auth guard
-  if (!authLoading && !isAuthenticated) {
-    return <Navigate to="/login" state={{ from: `/student/learn/${courseId}` }} replace />;
-  }
-
-  // ── Fetch course + progress ────────────────────────────────────────────────
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -161,10 +159,8 @@ export default function CourseLearning() {
       if (!courseData) throw new Error('Course not found');
 
       setCourse(courseData);
-      setProgress(progressData?.progress || null);
       setSummary(progressData?.summary || null);
 
-      // Build lessonProgress lookup by lessonId string
       const lp = {};
       if (progressData?.progress?.lessons) {
         for (const l of progressData.progress.lessons) {
@@ -173,10 +169,8 @@ export default function CourseLearning() {
       }
       setLessonProgress(lp);
 
-      // Open first module, select first lesson or last-accessed
       const modules = courseData.curriculum?.modules || [];
       if (modules.length > 0) {
-        // Default open: module containing current lesson or first module
         const currentLessonId = progressData?.summary?.currentLessonId;
         let defaultMod = modules[0];
         let defaultLesson = modules[0]?.lessons[0] || null;
@@ -209,20 +203,31 @@ export default function CourseLearning() {
   }, [courseId]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (!authLoading && isAuthenticated && courseId) {
+      const timer = setTimeout(() => {
+        void loadData();
+      }, 0);
 
-  // ── Handle lesson selection ────────────────────────────────────────────────
+      return () => clearTimeout(timer);
+    }
+
+    return undefined;
+  }, [authLoading, isAuthenticated, courseId, loadData]);
+
   const handleSelectLesson = useCallback(
     async (mod, lesson) => {
-      setSelectedModule(mod);
-      setSelectedLesson(lesson);
       setJustCompleted(false);
       setCompletionError(null);
+      setLessonStartError(null);
+      setSelectingLessonId(lesson._id);
 
       try {
         const res = await startLesson(courseId, lesson._id, mod._id);
         const updatedProgress = res.data?.data;
+
+        setSelectedModule(mod);
+        setSelectedLesson(lesson);
+
         if (updatedProgress?.lessons) {
           const lp = {};
           for (const l of updatedProgress.lessons) {
@@ -232,12 +237,16 @@ export default function CourseLearning() {
         }
       } catch (err) {
         console.error('Failed to record lesson start:', err);
+        setLessonStartError(
+          err.response?.data?.message || 'Failed to start this lesson. Please try again.'
+        );
+      } finally {
+        setSelectingLessonId(null);
       }
     },
     [courseId]
   );
 
-  // ── Handle lesson completion ───────────────────────────────────────────────
   const handleMarkComplete = useCallback(async () => {
     if (!selectedLesson || !selectedModule) return;
     try {
@@ -247,7 +256,6 @@ export default function CourseLearning() {
       const res = await completeLesson(courseId, selectedLesson._id, selectedModule._id);
       const responseData = res.data?.data;
 
-      // Update local progress
       setLessonProgress((prev) => ({
         ...prev,
         [selectedLesson._id.toString()]: {
@@ -273,7 +281,6 @@ export default function CourseLearning() {
     }
   }, [courseId, selectedLesson, selectedModule]);
 
-  // ── Previous / Next lesson ─────────────────────────────────────────────────
   const getAllLessonsFlat = useCallback(() => {
     if (!course) return [];
     const sorted = [...(course.curriculum?.modules || [])].sort(
@@ -295,17 +302,27 @@ export default function CourseLearning() {
     );
   }, [selectedLesson, getAllLessonsFlat]);
 
-  const navigateLesson = (dir) => {
-    const flat = getAllLessonsFlat();
-    const idx = currentFlatIndex();
-    const nextIdx = idx + dir;
-    if (nextIdx < 0 || nextIdx >= flat.length) return;
-    const { mod, lesson } = flat[nextIdx];
-    handleSelectLesson(mod, lesson);
-    setOpenModules((prev) => ({ ...prev, [mod._id]: true }));
-  };
+  const modules = [...(course?.curriculum?.modules || [])].sort(
+    (a, b) => a.order - b.order
+  );
+  const flat = getAllLessonsFlat();
+  const flatIdx = currentFlatIndex();
+  const hasPrev = flatIdx > 0;
+  const hasNext = flatIdx < flat.length - 1;
+  const isCurrentLessonCompleted =
+    selectedLesson && lessonProgress[selectedLesson._id]?.isCompleted;
 
-  // ─── Loading ─────────────────────────────────────────────────────────────
+  const embedUrl = selectedLesson?.videoId
+    ? buildEmbedUrl(selectedLesson.videoId)
+    : null;
+
+  const percentComplete = summary?.percentComplete ?? 0;
+  const isCourseCompleted = summary?.isCourseCompleted ?? false;
+
+  if (!authLoading && !isAuthenticated) {
+    return <Navigate to="/login" state={{ from: `/student/learn/${courseId}` }} replace />;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-navy-900 flex items-center justify-center">
@@ -317,7 +334,6 @@ export default function CourseLearning() {
     );
   }
 
-  // ─── Error ────────────────────────────────────────────────────────────────
   if (error || !course) {
     return (
       <div className="min-h-screen bg-navy-900 flex items-center justify-center p-4">
@@ -337,22 +353,15 @@ export default function CourseLearning() {
     );
   }
 
-  const modules = [...(course.curriculum?.modules || [])].sort(
-    (a, b) => a.order - b.order
-  );
-  const flat = getAllLessonsFlat();
-  const flatIdx = currentFlatIndex();
-  const hasPrev = flatIdx > 0;
-  const hasNext = flatIdx < flat.length - 1;
-  const isCurrentLessonCompleted =
-    selectedLesson && lessonProgress[selectedLesson._id]?.isCompleted;
-
-  const embedUrl = selectedLesson?.videoId
-    ? buildEmbedUrl(selectedLesson.videoId)
-    : null;
-
-  const percentComplete = summary?.percentComplete ?? 0;
-  const isCourseCompleted = summary?.isCourseCompleted ?? false;
+  const navigateLesson = (dir) => {
+    const flatList = getAllLessonsFlat();
+    const idx = currentFlatIndex();
+    const nextIdx = idx + dir;
+    if (nextIdx < 0 || nextIdx >= flatList.length) return;
+    const { mod, lesson } = flatList[nextIdx];
+    handleSelectLesson(mod, lesson);
+    setOpenModules((prev) => ({ ...prev, [mod._id]: true }));
+  };
 
   return (
     <div className="min-h-screen bg-navy-900 text-gray-100 flex flex-col">
@@ -360,7 +369,7 @@ export default function CourseLearning() {
       <header className="sticky top-0 z-30 bg-navy-950/90 backdrop-blur-md border-b border-navy-800 px-4 sm:px-6 py-3 flex items-center gap-4">
         <Link
           to="/student/dashboard"
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group flex-shrink-0"
+          className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group shrink-0"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
           <span className="hidden sm:inline">Dashboard</span>
@@ -375,8 +384,7 @@ export default function CourseLearning() {
           </p>
         </div>
 
-        <div className="flex-shrink-0 flex items-center gap-3">
-          {/* Progress Bar */}
+        <div className="shrink-0 flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2">
             <div className="w-28 h-1.5 bg-navy-700 rounded-full overflow-hidden">
               <div
@@ -390,7 +398,7 @@ export default function CourseLearning() {
           </div>
 
           {isCourseCompleted && (
-            <Trophy className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <Trophy className="w-5 h-5 text-amber-400 shrink-0" />
           )}
         </div>
       </header>
@@ -403,7 +411,7 @@ export default function CourseLearning() {
           <div className="w-full bg-black aspect-video relative">
             {embedUrl ? (
               <iframe
-                key={selectedLesson?._id} // force reload on lesson change
+                key={selectedLesson?._id}
                 src={embedUrl}
                 title={selectedLesson?.title || 'Lesson Video'}
                 className="w-full h-full"
@@ -500,6 +508,13 @@ export default function CourseLearning() {
                 </p>
               )}
 
+              {lessonStartError && (
+                <p className="text-xs text-red-400 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {lessonStartError}
+                </p>
+              )}
+
               {/* Course Resources */}
               {course.resources && course.resources.length > 0 && (
                 <div className="pt-4 border-t border-navy-800">
@@ -559,7 +574,7 @@ export default function CourseLearning() {
         </div>
 
         {/* ── RIGHT: Curriculum Sidebar ── */}
-        <aside className="hidden lg:flex flex-col w-80 xl:w-96 border-l border-navy-800 bg-navy-950/60 overflow-y-auto flex-shrink-0">
+        <aside className="hidden lg:flex flex-col w-80 xl:w-96 border-l border-navy-800 bg-navy-950/60 overflow-y-auto shrink-0">
           <div className="p-4 border-b border-navy-800">
             <h3 className="text-sm font-bold text-white">Course Curriculum</h3>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -598,6 +613,7 @@ export default function CourseLearning() {
                   lessonProgress={lessonProgress}
                   currentLessonId={selectedLesson?._id}
                   onSelectLesson={(lesson) => handleSelectLesson(mod, lesson)}
+                  selectingLessonId={selectingLessonId}
                 />
               ))}
             </div>
@@ -627,6 +643,7 @@ export default function CourseLearning() {
         setOpenModules={setOpenModules}
         onSelectLesson={handleSelectLesson}
         percentComplete={percentComplete}
+        selectingLessonId={selectingLessonId}
       />
     </div>
   );
@@ -642,6 +659,7 @@ function MobileCurriculumPanel({
   setOpenModules,
   onSelectLesson,
   percentComplete,
+  selectingLessonId,
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -681,6 +699,7 @@ function MobileCurriculumPanel({
                 onSelectLesson(mod, lesson);
                 setMobileOpen(false);
               }}
+              selectingLessonId={selectingLessonId}
             />
           ))}
         </div>

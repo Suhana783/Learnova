@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -6,31 +6,34 @@ import {
   PlayCircle,
   FileText,
   ExternalLink,
-  Lock,
   Layers,
   BookOpen,
   CheckCircle,
   CheckCircle2,
-  AlertCircle,
   RotateCcw,
 } from 'lucide-react';
 import { getCourseById } from '../../services/courseServices';
+import { useAuth } from '../../shared/context/AuthContext';
 
 export default function CourseDetail() {
   const { id } = useParams();
+  const { isAuthenticated } = useAuth();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchCourse = async () => {
+  const fetchCourse = useCallback(async () => {
     if (!id) return;
+
     try {
       setLoading(true);
       setError(null);
       const res = await getCourseById(id);
       const courseData = res.data?.data || res.data;
+
       if (!courseData) {
         setError('Course not found');
+        setCourse(null);
       } else {
         setCourse(courseData);
       }
@@ -38,19 +41,30 @@ export default function CourseDetail() {
       console.error('Failed to fetch course details:', err);
       setError(
         err.response?.data?.message ||
-        err.message ||
-        'Unable to load course details. Please verify the course ID and backend connection.'
+          err.message ||
+          'Unable to load course details. Please verify the course ID and backend connection.'
       );
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchCourse();
   }, [id]);
 
-  // Loading Skeleton State
+  useEffect(() => {
+    if (!id) return;
+
+    let active = true;
+    const loadCourse = async () => {
+      if (!active) return;
+      await fetchCourse();
+    };
+
+    loadCourse();
+
+    return () => {
+      active = false;
+    };
+  }, [fetchCourse, id]);
+
   if (loading) {
     return (
       <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 w-full">
@@ -66,7 +80,7 @@ export default function CourseDetail() {
               <div className="h-4 w-full bg-navy-700/60 rounded mb-2" />
               <div className="h-4 w-5/6 bg-navy-700/60 rounded" />
             </div>
-            <div className="w-full lg:w-72 h-64 bg-navy-950/80 rounded-2xl flex-shrink-0" />
+            <div className="w-full lg:w-72 h-64 bg-navy-950/80 rounded-2xl shrink-0" />
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -77,7 +91,6 @@ export default function CourseDetail() {
     );
   }
 
-  // Fallback if course not found or request failed
   if (error || !course) {
     return (
       <div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-20 text-center">
@@ -111,7 +124,6 @@ export default function CourseDetail() {
     );
   }
 
-  // Derived course properties
   const isPlaylist =
     course.curriculum?.playlistUrl?.includes('list=') ||
     course.curriculum?.playlistUrl?.includes('playlist') ||
@@ -138,12 +150,12 @@ export default function CourseDetail() {
     (course.title?.includes('HTML')
       ? 'HTML5'
       : course.title?.includes('CSS')
-      ? 'CSS3'
-      : course.title?.includes('JavaScript')
-      ? 'JS'
-      : course.title?.includes('React')
-      ? 'React'
-      : '');
+        ? 'CSS3'
+        : course.title?.includes('JavaScript')
+          ? 'JS'
+          : course.title?.includes('React')
+            ? 'React'
+            : '');
 
   const displayRating =
     typeof course.rating?.average === 'number' && course.rating.average > 0
@@ -153,9 +165,23 @@ export default function CourseDetail() {
   const difficultyLevel = course.level || course.difficulty || 'Beginner';
   const imageUrl = course.thumbnail?.url || course.image;
 
+  const isSignedOut = !isAuthenticated;
+  const watchHref = isSignedOut ? '/signup' : (videoUrl || '/signup');
+  const notesHref = isSignedOut ? '/signup' : (notesResource?.url || '/signup');
+  const watchTarget = isSignedOut ? undefined : '_blank';
+  const notesTarget = isSignedOut ? undefined : '_blank';
+  const watchRel = isSignedOut ? undefined : 'noopener noreferrer';
+  const notesRel = isSignedOut ? undefined : 'noopener noreferrer';
+
+  const handleProtectedLink = (e) => {
+    if (isSignedOut) {
+      e.preventDefault();
+      window.location.href = '/signup';
+    }
+  };
+
   return (
     <div className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 w-full">
-      {/* Navigation breadcrumb back to catalog */}
       <Link
         to="/courses"
         className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-accent-400 mb-8 transition-colors group"
@@ -164,27 +190,20 @@ export default function CourseDetail() {
         <span>Back to Course Catalog</span>
       </Link>
 
-      {/* ========================================================================= */}
-      {/* COURSE HEADER SECTION */}
-      {/* ========================================================================= */}
       <header className="rounded-3xl bg-navy-800/80 border border-navy-700/70 p-6 sm:p-10 shadow-xl shadow-navy-950/40 mb-12">
         <div className="flex flex-col lg:flex-row gap-8 items-start justify-between">
           <div className="flex-1">
-            {/* Meta Tags: Category, Difficulty, Icon, Star Rating */}
             <div className="flex items-center gap-3 flex-wrap mb-5">
-              {/* Tech Icon / Label */}
               {techIcon && (
                 <span className="px-3 py-1 rounded-lg bg-navy-950 border border-navy-700 text-xs font-bold text-accent-400 tracking-wide uppercase">
                   {techIcon}
                 </span>
               )}
 
-              {/* Category Tag */}
               <span className="text-xs font-medium px-3 py-1 rounded-full bg-navy-900 border border-navy-700/80 text-gray-300">
                 {course.category}
               </span>
 
-              {/* Difficulty Badge */}
               <span
                 className={`text-xs font-medium px-3 py-1 rounded-full border ${
                   difficultyLevel === 'Beginner'
@@ -195,30 +214,24 @@ export default function CourseDetail() {
                 {difficultyLevel}
               </span>
 
-              {/* Star Rating */}
               <div className="flex items-center gap-1.5 text-xs text-amber-400 ml-auto sm:ml-0 bg-navy-900/80 border border-navy-700/60 px-3 py-1 rounded-full">
                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span className="font-semibold text-gray-200">
-                  {displayRating}
-                </span>
+                <span className="font-semibold text-gray-200">{displayRating}</span>
                 <span className="text-gray-400 text-[11px]">/ 5.0</span>
               </div>
             </div>
 
-            {/* Course Title */}
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-[1.15] mb-5">
               {course.title}
             </h1>
 
-            {/* Editorial Description */}
             <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
               {course.description || course.shortDescription}
             </p>
           </div>
 
-          {/* Course Thumbnail Image (if available) */}
           {imageUrl && (
-            <div className="w-full lg:w-72 aspect-square sm:aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden border border-navy-700/70 bg-navy-950/90 flex-shrink-0 shadow-lg relative group p-3 flex items-center justify-center">
+            <div className="w-full lg:w-72 aspect-square sm:aspect-4/3 lg:aspect-square rounded-2xl overflow-hidden border border-navy-700/70 bg-navy-950/90 shrink-0 shadow-lg relative group p-3 flex items-center justify-center">
               <img
                 src={imageUrl}
                 alt={course.title}
@@ -232,9 +245,6 @@ export default function CourseDetail() {
         </div>
       </header>
 
-      {/* ========================================================================= */}
-      {/* LEARNING OUTCOMES, HIGHLIGHTS & PREREQUISITES SECTION */}
-      {/* ========================================================================= */}
       {((course.learningOutcomes && course.learningOutcomes.length > 0) ||
         (course.highlights && course.highlights.length > 0) ||
         (course.prerequisites && course.prerequisites.length > 0)) && (
@@ -249,18 +259,17 @@ export default function CourseDetail() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Learning Outcomes */}
             {course.learningOutcomes && course.learningOutcomes.length > 0 && (
               <div className="rounded-2xl bg-navy-800/80 border border-navy-700/70 p-6 sm:p-8 shadow-lg flex flex-col justify-between">
                 <div>
                   <h3 className="font-display text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-accent-500 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-accent-500 shrink-0" />
                     <span>Learning Outcomes</span>
                   </h3>
                   <ul className="space-y-3">
                     {course.learningOutcomes.map((outcome, idx) => (
                       <li key={idx} className="flex items-start gap-3 text-sm text-gray-300 leading-relaxed">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
                         <span>{outcome}</span>
                       </li>
                     ))}
@@ -269,20 +278,16 @@ export default function CourseDetail() {
               </div>
             )}
 
-            {/* Highlights & Prerequisites */}
             <div className="flex flex-col gap-6">
               {course.highlights && course.highlights.length > 0 && (
                 <div className="rounded-2xl bg-navy-800/80 border border-navy-700/70 p-6 sm:p-8 shadow-lg flex-1">
                   <h3 className="font-display text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-accent-500 flex-shrink-0" />
+                    <Layers className="w-5 h-5 text-accent-500 shrink-0" />
                     <span>Key Highlights</span>
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {course.highlights.map((highlight, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs px-3 py-1.5 rounded-lg bg-navy-900 border border-navy-700 text-gray-200 font-medium"
-                      >
+                      <span key={idx} className="text-xs px-3 py-1.5 rounded-lg bg-navy-900 border border-navy-700 text-gray-200 font-medium">
                         {highlight}
                       </span>
                     ))}
@@ -297,10 +302,7 @@ export default function CourseDetail() {
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {course.prerequisites.map((prereq, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs px-2.5 py-1 rounded-md bg-navy-900/80 border border-navy-700/80 text-gray-300"
-                      >
+                      <span key={idx} className="text-xs px-2.5 py-1 rounded-md bg-navy-900/80 border border-navy-700/80 text-gray-300">
                         {prereq}
                       </span>
                     ))}
@@ -312,9 +314,6 @@ export default function CourseDetail() {
         </section>
       )}
 
-      {/* ========================================================================= */}
-      {/* LEARNING RESOURCES SECTION */}
-      {/* ========================================================================= */}
       <section className="mb-14">
         <div className="mb-6">
           <span className="text-xs font-semibold uppercase tracking-widest text-accent-500 mb-1.5 block">
@@ -328,14 +327,13 @@ export default function CourseDetail() {
           </p>
         </div>
 
-        {/* 2 Clear Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Card 1: Watch Course */}
           {videoUrl ? (
             <a
-              href={videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={watchHref}
+              target={watchTarget}
+              rel={watchRel}
+              onClick={handleProtectedLink}
               className="group relative rounded-2xl bg-navy-800/80 border border-navy-700/70 hover:border-accent-500/60 p-6 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-navy-950/50 hover:-translate-y-1"
             >
               <div>
@@ -351,12 +349,14 @@ export default function CourseDetail() {
                   Watch Course
                 </h3>
                 <p className="text-sm text-gray-300 leading-relaxed mb-6">
-                  Stream the complete video tutorial directly on YouTube. Prepared for immediate practical application.
+                  {isSignedOut
+                    ? 'Sign up to unlock the full lesson video and continue learning.'
+                    : 'Stream the complete video tutorial directly on YouTube. Prepared for immediate practical application.'}
                 </p>
               </div>
 
               <div className="w-full inline-flex items-center justify-between py-2.5 px-4 rounded-xl bg-navy-900 border border-navy-700 group-hover:border-accent-500 group-hover:bg-accent-500 text-gray-200 group-hover:text-navy-950 font-semibold text-xs sm:text-sm transition-all duration-200">
-                <span>{watchButtonLabel}</span>
+                <span>{isSignedOut ? 'Sign Up to Watch' : watchButtonLabel}</span>
                 <ExternalLink className="w-4 h-4 ml-2" />
               </div>
             </a>
@@ -368,21 +368,23 @@ export default function CourseDetail() {
                 </div>
                 <h3 className="font-display text-xl font-bold text-white mb-2">Watch Course</h3>
                 <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                  Lectures for this track will be posted shortly.
+                  {isSignedOut
+                    ? 'Video access is unlocked after sign-up.'
+                    : 'Lectures for this track will be posted shortly.'}
                 </p>
               </div>
               <span className="text-xs text-gray-500 font-medium py-2.5 px-4 rounded-xl bg-navy-900/60 border border-navy-800 block text-center">
-                Coming Soon
+                {isSignedOut ? 'Sign Up Required' : 'Coming Soon'}
               </span>
             </div>
           )}
 
-          {/* Card 2: Course Notes */}
           {notesResource?.url ? (
             <a
-              href={notesResource.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={notesHref}
+              target={notesTarget}
+              rel={notesRel}
+              onClick={handleProtectedLink}
               className="group relative rounded-2xl bg-navy-800/80 border border-navy-700/70 hover:border-accent-500/60 p-6 flex flex-col justify-between transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-navy-950/50 hover:-translate-y-1"
             >
               <div>
@@ -398,13 +400,14 @@ export default function CourseDetail() {
                   {notesResource.title || 'Course Notes'}
                 </h3>
                 <p className="text-sm text-gray-300 leading-relaxed mb-6">
-                  {notesResource.description ||
-                    'Inspect structured lecture notes, blueprints, and official references to reinforce concept retention.'}
+                  {isSignedOut
+                    ? 'Create a student account to unlock course notes and reference material.'
+                    : notesResource.description || 'Inspect structured lecture notes, blueprints, and official references to reinforce concept retention.'}
                 </p>
               </div>
 
               <div className="w-full inline-flex items-center justify-between py-2.5 px-4 rounded-xl bg-navy-900 border border-navy-700 group-hover:border-accent-500 group-hover:bg-accent-500 text-gray-200 group-hover:text-navy-950 font-semibold text-xs sm:text-sm transition-all duration-200">
-                <span>Open Course Notes</span>
+                <span>{isSignedOut ? 'Sign Up to Open' : 'Open Course Notes'}</span>
                 <ExternalLink className="w-4 h-4 ml-2" />
               </div>
             </a>
@@ -416,76 +419,38 @@ export default function CourseDetail() {
                 </div>
                 <h3 className="font-display text-xl font-bold text-white mb-2">Course Notes</h3>
                 <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                  Reference materials and study notes are currently being compiled.
+                  {isSignedOut
+                    ? 'Course notes require a student account.'
+                    : 'Reference materials and study notes are currently being compiled.'}
                 </p>
               </div>
               <span className="text-xs text-gray-500 font-medium py-2.5 px-4 rounded-xl bg-navy-900/60 border border-navy-800 block text-center">
-                Notes In Preparation
+                {isSignedOut ? 'Sign Up Required' : 'Coming Soon'}
               </span>
             </div>
           )}
         </div>
-
-        {/* Additional verified resources list if available */}
-        {additionalResources.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-navy-800/80">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
-              Additional Course Materials
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {additionalResources.map((res, i) => (
-                <a
-                  key={res._id || i}
-                  href={res.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3.5 rounded-xl bg-navy-900/80 border border-navy-700/70 hover:border-accent-500/50 text-gray-200 hover:text-white transition-colors group text-xs sm:text-sm"
-                >
-                  <span className="font-medium truncate">{res.title}</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-accent-400 ml-2 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
       </section>
 
-      {/* ========================================================================= */}
-      {/* LOCKED SECTION: Full Course Experience */}
-      {/* ========================================================================= */}
-      <section className="relative rounded-3xl bg-navy-800/40 border border-navy-700/60 p-6 sm:p-10 overflow-hidden shadow-xl backdrop-blur-sm">
-        {/* Subtle decorative background gradient */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-accent-500/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy-900/90 border border-navy-700 text-xs text-accent-400 font-medium mb-3">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Student Account Feature</span>
-            </div>
-            <h3 className="font-display text-xl sm:text-2xl font-bold text-white mb-2">
-              Full Course Experience
-            </h3>
-            <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
-              Enroll and track your progress, lesson-by-lesson, once you create a student account.
-            </p>
+      {additionalResources.length > 0 && (
+        <section className="pb-10">
+          <h3 className="font-display text-xl font-bold text-white mb-4">Additional References</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {additionalResources.map((resource, idx) => (
+              <a
+                key={idx}
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 rounded-xl bg-navy-800/80 border border-navy-700/70 px-4 py-3 text-sm text-gray-300 hover:border-accent-500/50 hover:text-white transition-colors"
+              >
+                <span>{resource.title || 'Reference'}</span>
+                <ExternalLink className="w-4 h-4 text-gray-400" />
+              </a>
+            ))}
           </div>
-
-          <div className="flex flex-col items-start sm:items-end gap-2 w-full sm:w-auto">
-            {/* Consistent disabled enroll button pattern */}
-            <button
-              disabled
-              className="w-full sm:w-auto cursor-not-allowed opacity-60 bg-navy-900 border border-navy-700 text-gray-400 font-semibold px-6 py-3 rounded-xl inline-flex items-center justify-center gap-2.5 text-sm shadow-inner transition-colors"
-            >
-              <Lock className="w-4 h-4 text-gray-400" />
-              <span>Sign Up to Enroll</span>
-            </button>
-            <span className="text-[11px] text-gray-400 italic">
-              Enrollment opens with upcoming student portal
-            </span>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

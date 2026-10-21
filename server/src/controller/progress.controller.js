@@ -85,16 +85,17 @@ exports.completeLesson = async (req, res, next) => {
       return next(err);
     }
 
-    const progress = await completeLessonService(userId, courseId, moduleId, lessonId);
+    const result = await completeLessonService(userId, courseId, moduleId, lessonId);
 
     res.status(200).json({
       success: true,
       message: 'Lesson marked as completed',
       data: {
-        percentComplete: progress.percentComplete,
-        isCourseCompleted: progress.isCourseCompleted,
-        completedLessons: progress.lessons.filter((l) => l.isCompleted).length,
-        progress,
+        percentComplete: result.summary.percentComplete,
+        isCourseCompleted: result.summary.isCourseCompleted,
+        completedLessons: result.summary.completedLessons,
+        totalLessons: result.summary.totalLessons,
+        progress: result.progress,
       },
     });
   } catch (error) {

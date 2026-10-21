@@ -46,9 +46,9 @@ export default function StudentSidebar({ onCloseMobile }) {
     <aside className="w-64 bg-navy-950 border-r border-navy-750/70 flex flex-col h-full select-none">
       {/* Brand & Logo */}
       <div className="p-5 border-b border-navy-850 flex items-center justify-between">
-        <Link to="/" onClick={onCloseMobile} className="inline-block">
+        <div onClick={onCloseMobile} className="inline-block">
           <LearnovaLogo size="md" />
-        </Link>
+        </div>
       </div>
 
       {/* Nav Menu */}

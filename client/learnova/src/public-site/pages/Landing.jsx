@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -38,7 +38,8 @@ export default function Landing() {
       } catch (err) {
         console.error('Failed to load courses on landing:', err);
         if (isMounted) {
-          setError(err.message || 'Failed to load courses');
+          // Preserving the existing error handling logic
+          setError('Failed to load courses. Please try again later.');
         }
       } finally {
         if (isMounted) {
@@ -242,6 +243,10 @@ export default function Landing() {
                 />
               ))}
             </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-8 text-center text-red-200">
+              <p>{error}</p>
+            </div>
           ) : (
             <div className="rounded-2xl border border-navy-800 bg-navy-900/60 p-8 text-center text-gray-400">
               <p>Courses are being updated. Please check back shortly.</p>
@@ -277,7 +282,7 @@ export default function Landing() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {/* Value Prop 1: Real Feedback, Not Just Grades (Featured double width) */}
-            <div className="rounded-2xl bg-gradient-to-br from-navy-800 to-navy-900 border border-navy-700/90 p-8 sm:p-10 flex flex-col justify-between shadow-xl shadow-navy-950/40 md:col-span-2 relative overflow-hidden group">
+            <div className="rounded-2xl bg-linear-to-br from-navy-800 to-navy-900 border border-navy-700/90 p-8 sm:p-10 flex flex-col justify-between shadow-xl shadow-navy-950/40 md:col-span-2 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/5 rounded-full blur-3xl pointer-events-none" />
               <div>
                 <div className="w-12 h-12 rounded-xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center text-accent-400 mb-6">
@@ -387,9 +392,9 @@ export default function Landing() {
       {/* ========================================================================= */}
       {/* SECTION 5 — Final CTA Banner */}
       {/* ========================================================================= */}
-      <section className="relative w-full py-24 sm:py-32 overflow-hidden border-t border-navy-800/80 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-950">
+      <section className="relative w-full py-24 sm:py-32 overflow-hidden border-t border-navy-800/80 bg-linear-to-b from-navy-950 via-navy-900 to-navy-950">
         {/* Soft abstract ambient glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[800px] h-[300px] sm:h-[400px] bg-accent-500/10 blur-[140px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 sm:w-200 h-75 sm:h-100 bg-accent-500/10 blur-[140px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-5 leading-tight">

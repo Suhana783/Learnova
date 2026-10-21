@@ -5,45 +5,100 @@ const sendOTPEmail = require('../../utils/sendEmail');
 const { createAccessToken, createRefreshToken } = require('../../utils/token');
 const { refreshTokenSecret } = require('../config/secrets');
 
+const buildError = (message, statusCode = 400) => {
+    const err = new Error(message);
+    err.statusCode = statusCode;
+    return err;
+};
+
+const normalizeEmail = (email = '') => String(email).trim().toLowerCase();
+
 const registerUserService = async (userData) => {
     const { name, email, password, phone, address, interestedIn, role = 'user' } = userData;
+    const normalizedEmail = normalizeEmail(email);
 
-    const existingUser = await User.findOne({ email });
+    if (!normalizedEmail) {
+        throw buildError('Email is required', 400);
+    }
+
+    // Step 1: Check whether the email already exists in MongoDB
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (existingUser && existingUser.isVerified) {
+        throw buildError('This email is already registered. Please log in.', 409);
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiry = Date.now() + 18 * 60 * 1000;
+    const otpExpiry = new Date(Date.now() + 18 * 60 * 1000);
     const hashedPassword = await bcrypt.hash(password, 10);
 
     let user;
-    if (existingUser) {
-        if (existingUser.isVerified) {
-            throw new Error('Email already registered. Please log in.');
+    let isNewUser = false;
+
+    try {
+        if (existingUser) {
+            // Pending unverified account: refresh details + OTP for retry/resend flow
+            existingUser.name = name;
+            existingUser.password = hashedPassword;
+            existingUser.phone = phone || existingUser.phone;
+            existingUser.address = address || existingUser.address;
+            existingUser.interestedIn = interestedIn || existingUser.interestedIn;
+            existingUser.role = role || existingUser.role;
+            existingUser.otp = otp;
+            existingUser.otpExpiry = otpExpiry;
+            existingUser.email = normalizedEmail;
+            user = await existingUser.save();
+        } else {
+            isNewUser = true;
+            user = await User.create({
+                name,
+                email: normalizedEmail,
+                password: hashedPassword,
+                phone,
+                address,
+                interestedIn,
+                role: role || 'user',
+                otp,
+                otpExpiry,
+                isVerified: false,
+            });
         }
-        // If pending verification, update info and send new OTP
-        existingUser.name = name;
-        existingUser.password = hashedPassword;
-        existingUser.phone = phone || existingUser.phone;
-        existingUser.address = address || existingUser.address;
-        existingUser.interestedIn = interestedIn || existingUser.interestedIn;
-        existingUser.role = role || existingUser.role;
-        existingUser.otp = otp;
-        existingUser.otpExpiry = otpExpiry;
-        user = await existingUser.save();
-    } else {
-        user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-            phone,
-            address,
-            interestedIn,
-            role: role || 'user',
-            otp,
-            otpExpiry,
-        });
+    } catch (dbError) {
+        // Handles concurrent signup races safely without duplicate accounts
+        if (dbError?.code === 11000 || (dbError?.message && dbError.message.includes('E11000'))) {
+            const concurrentUser = await User.findOne({ email: normalizedEmail });
+            if (concurrentUser && concurrentUser.isVerified) {
+                throw buildError('This email is already registered. Please log in.', 409);
+            }
+
+            if (concurrentUser) {
+                concurrentUser.name = name;
+                concurrentUser.password = hashedPassword;
+                concurrentUser.phone = phone || concurrentUser.phone;
+                concurrentUser.address = address || concurrentUser.address;
+                concurrentUser.interestedIn = interestedIn || concurrentUser.interestedIn;
+                concurrentUser.role = role || concurrentUser.role;
+                concurrentUser.otp = otp;
+                concurrentUser.otpExpiry = otpExpiry;
+                user = await concurrentUser.save();
+            } else {
+                throw buildError('This email is already registered. Please log in.', 409);
+            }
+        } else {
+            throw dbError;
+        }
     }
 
-    await sendOTPEmail(email, otp);
+    // Step 2: Ensure email is accepted by provider before reporting success
+    try {
+        await sendOTPEmail(normalizedEmail, otp);
+    } catch (emailError) {
+        // Clean up newly created unverified account if email fails to send
+        if (isNewUser && user?._id) {
+            await User.findByIdAndDelete(user._id).catch(() => {});
+        }
+        throw emailError;
+    }
 
     return {
         message: 'OTP sent to your email address',
@@ -52,15 +107,20 @@ const registerUserService = async (userData) => {
 };
 
 const loginUserService = async ({email, password}) => {
-    const user = await User.findOne({email});
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail || !password) {
+        throw buildError('Email and password are required', 400);
+    }
 
-    if (!user) throw new Error('Invalid email or password');
-    if (!user.isVerified) throw new Error('Please verify your account first');
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) throw buildError('Invalid email or password', 401);
+    if (!user.isVerified) throw buildError('Please verify your account first. Complete signup to verify your email.', 403);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-        throw new Error('Invalid email or password');
+        throw buildError('Invalid email or password', 401);
     }
 
     const accessToken = createAccessToken(user);
@@ -87,15 +147,15 @@ const loginUserService = async ({email, password}) => {
 
 const refreshTokenService = async ({refreshToken}) => {
     if (!refreshToken) {
-        throw new Error('Refresh token is required');
+        throw buildError('Refresh token is required', 400);
     }
 
     const decoded = jwt.verify(refreshToken, refreshTokenSecret);
     const user = await User.findById(decoded.userId);
 
-    if (!user) throw new Error('User not found');
+    if (!user) throw buildError('User not found', 404);
     if (user.refreshToken !== refreshToken) {
-        throw new Error('Invalid refresh token');
+        throw buildError('Invalid refresh token', 401);
     }
 
     const newAccessToken = createAccessToken(user);
@@ -107,17 +167,25 @@ const refreshTokenService = async ({refreshToken}) => {
 };
 
 const verifyOTPService = async ({email, otp}) => {
-    const user = await User.findOne({email});
-    if (!user) throw new Error('User not found');
-    if (user.isVerified) throw new Error('User already verified');
-    if (!user.otp || !user.otpExpiry) throw new Error('No OTP found for user');
-
-    if (Date.now() > new Date(user.otpExpiry).getTime()) {
-        throw new Error('OTP expired');
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+        throw buildError('Email is required', 400);
+    }
+    if (!otp) {
+        throw buildError('OTP code is required', 400);
     }
 
-    if (user.otp !== otp) {
-        throw new Error('Invalid OTP');
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) throw buildError('User not found', 404);
+    if (user.isVerified) throw buildError('This email is already registered and verified. Please log in.', 409);
+    if (!user.otp || !user.otpExpiry) throw buildError('No OTP found. Please request a new OTP.', 400);
+
+    if (Date.now() > new Date(user.otpExpiry).getTime()) {
+        throw buildError('OTP has expired. Please request a new OTP.', 400);
+    }
+
+    if (String(user.otp).trim() !== String(otp).trim()) {
+        throw buildError('Invalid OTP code. Please check and try again.', 400);
     }
 
     user.isVerified = true;

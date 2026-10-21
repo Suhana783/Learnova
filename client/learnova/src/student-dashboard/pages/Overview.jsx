@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/context/AuthContext';
 import { getAssignments } from '../../services/assignmentService';
@@ -8,7 +8,6 @@ import {
   Sparkles,
   FileUp,
   User,
-  CheckCircle2,
   BookOpen,
   ArrowRight,
   ExternalLink,
@@ -31,8 +30,7 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
   const handleContinue = async () => {
     if (!hasProgress) return;
     try {
-      const res = await getContinueLearning(course._id);
-      const data = res.data?.data;
+      await getContinueLearning(course._id);
       navigate(`/student/learn/${course._id}`);
     } catch {
       navigate(`/student/learn/${course._id}`);
@@ -117,6 +115,7 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
 // ─── Main Overview ─────────────────────────────────────────────────────────────
 export default function Overview() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(true);
   const [courses, setCourses] = useState([]);
@@ -154,24 +153,33 @@ export default function Overview() {
         setLoadingCourses(true);
         setCoursesError(null);
 
-        const [coursesRes, progressRes] = await Promise.all([
+        const [coursesResult, progressResult] = await Promise.allSettled([
           getCourses({ limit: 20 }),
           getAllProgress(),
         ]);
 
-        const allCourses = coursesRes.data?.data || [];
-        const allProgress = progressRes.data?.data || [];
-
-        setCourses(allCourses);
-
-        // Build a lookup map by courseId
-        const map = {};
-        for (const p of allProgress) {
-          if (p.courseId) {
-            map[p.courseId.toString()] = p;
-          }
+        // 1. Process courses
+        if (coursesResult.status === 'fulfilled') {
+          const allCourses = coursesResult.value.data?.data || [];
+          setCourses(allCourses);
+        } else {
+          console.error('Failed to load courses:', coursesResult.reason);
+          setCoursesError('Failed to load courses. Please refresh.');
         }
-        setProgressMap(map);
+
+        // 2. Process student course progress (if available)
+        if (progressResult.status === 'fulfilled') {
+          const allProgress = progressResult.value.data?.data || [];
+          const map = {};
+          for (const p of allProgress) {
+            if (p.courseId) {
+              map[p.courseId.toString()] = p;
+            }
+          }
+          setProgressMap(map);
+        } else {
+          console.warn('Could not load course progress (user might need re-auth):', progressResult.reason);
+        }
       } catch (err) {
         console.error('Failed to load courses/progress:', err);
         setCoursesError('Failed to load courses. Please refresh.');
@@ -187,14 +195,9 @@ export default function Overview() {
       setEnrolling(courseId);
       // Enroll
       await enrollInCourse(courseId);
-      // Refresh progress so the card shows "Continue Learning"
-      const progressRes = await getAllProgress();
-      const allProgress = progressRes.data?.data || [];
-      const map = {};
-      for (const p of allProgress) {
-        if (p.courseId) map[p.courseId.toString()] = p;
-      }
-      setProgressMap(map);
+
+      // Navigate into learning mode; progress doc is created/read there.
+      navigate(`/student/learn/${courseId}`);
     } catch (err) {
       console.error('Enrollment failed:', err);
     } finally {
@@ -209,7 +212,7 @@ export default function Overview() {
   return (
     <div className="space-y-6">
       {/* Welcome Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 border border-navy-700/80 p-6 sm:p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-navy-950 via-navy-900 to-navy-800 border border-navy-700/80 p-6 sm:p-8 shadow-xl">
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-500/15 border border-accent-500/30 text-accent-400 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
