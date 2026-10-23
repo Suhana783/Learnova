@@ -6,7 +6,9 @@ const getSmtpConfig = () => {
     const rawFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM;
 
     const user = rawUser ? rawUser.trim() : '';
-    const pass = rawPass ? rawPass.trim() : '';
+    // Gmail App Passwords are shown as "xxxx xxxx xxxx xxxx" (16 chars + 3 spaces = 19 chars).
+    // Strip ALL whitespace so the raw copied value works regardless of formatting.
+    const pass = rawPass ? rawPass.replace(/\s/g, '') : '';
     const from = rawFrom ? rawFrom.trim() : '';
 
     return { user, pass, from };
@@ -128,7 +130,5 @@ const sendOTPEmail = async (email, otp) => {
         throw error;
     }
 };
-
-module.exports = sendOTPEmail;
 
 module.exports = sendOTPEmail;

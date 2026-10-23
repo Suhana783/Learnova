@@ -181,11 +181,15 @@ const verifyOTPService = async ({email, otp}) => {
     if (!user.otp || !user.otpExpiry) throw buildError('No OTP found. Please request a new OTP.', 400);
 
     if (Date.now() > new Date(user.otpExpiry).getTime()) {
-        throw buildError('OTP has expired. Please request a new OTP.', 400);
+        // OTP expired — delete the unverified user so the DB stays clean
+        await User.findByIdAndDelete(user._id).catch(() => {});
+        throw buildError('OTP has expired. Please sign up again to receive a new code.', 400);
     }
 
     if (String(user.otp).trim() !== String(otp).trim()) {
-        throw buildError('Invalid OTP code. Please check and try again.', 400);
+        // Wrong OTP — delete the unverified user so no ghost record lingers
+        await User.findByIdAndDelete(user._id).catch(() => {});
+        throw buildError('Invalid OTP code. Please sign up again with the correct code.', 400);
     }
 
     user.isVerified = true;
