@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, X, BookOpen, SearchX, RotateCcw, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Search, X, BookOpen, SearchX, RotateCcw, AlertCircle } from 'lucide-react';
 import { getCourses } from '../../services/courseServices';
 import CourseCard from '../components/CourseCard';
 
@@ -36,6 +36,8 @@ export default function CourseCatalog() {
   };
 
   useEffect(() => {
+    // The request updates loading and result state after the component mounts.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCourses();
   }, []);
 

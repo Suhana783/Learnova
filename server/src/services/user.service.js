@@ -1,10 +1,5 @@
 const User = require('../model/user.model');
 
-exports.getAllUsersService = async () => {
-    const users = await User.find().select('-password -otp -otpExpiry -refreshToken');
-    return users;
-};
-
 exports.getUserProfileService = async (id) => {
     const user = await User.findById(id).select('-password -otp -otpExpiry -refreshToken');
     return user;

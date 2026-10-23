@@ -14,7 +14,7 @@ const buildError = (message, statusCode = 400) => {
 const normalizeEmail = (email = '') => String(email).trim().toLowerCase();
 
 const registerUserService = async (userData) => {
-    const { name, email, password, phone, address, interestedIn, role = 'user' } = userData;
+    const { name, email, password, phone, address, interestedIn } = userData;
     const normalizedEmail = normalizeEmail(email);
 
     if (!normalizedEmail) {
@@ -43,7 +43,7 @@ const registerUserService = async (userData) => {
             existingUser.phone = phone || existingUser.phone;
             existingUser.address = address || existingUser.address;
             existingUser.interestedIn = interestedIn || existingUser.interestedIn;
-            existingUser.role = role || existingUser.role;
+            existingUser.role = 'user';
             existingUser.otp = otp;
             existingUser.otpExpiry = otpExpiry;
             existingUser.email = normalizedEmail;
@@ -57,7 +57,7 @@ const registerUserService = async (userData) => {
                 phone,
                 address,
                 interestedIn,
-                role: role || 'user',
+                role: 'user',
                 otp,
                 otpExpiry,
                 isVerified: false,
@@ -77,7 +77,7 @@ const registerUserService = async (userData) => {
                 concurrentUser.phone = phone || concurrentUser.phone;
                 concurrentUser.address = address || concurrentUser.address;
                 concurrentUser.interestedIn = interestedIn || concurrentUser.interestedIn;
-                concurrentUser.role = role || concurrentUser.role;
+                concurrentUser.role = 'user';
                 concurrentUser.otp = otp;
                 concurrentUser.otpExpiry = otpExpiry;
                 user = await concurrentUser.save();
@@ -140,7 +140,6 @@ const loginUserService = async ({email, password}) => {
             phone: user.phone || '',
             address: user.address || '',
             interestedIn: user.interestedIn || '',
-            role: user.role,
         },
     };
 };
@@ -213,7 +212,6 @@ const verifyOTPService = async ({email, otp}) => {
             phone: user.phone || '',
             address: user.address || '',
             interestedIn: user.interestedIn || '',
-            role: user.role,
         },
     };
 };

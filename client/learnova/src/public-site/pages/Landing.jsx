@@ -11,8 +11,8 @@ import {
   Quote,
   MessageSquareQuote,
   CheckCircle2,
+  BookOpen,
 } from 'lucide-react';
-import heroBanner from '../../assets/Gemini_Generated_Image_dqddhndqddhndqdd.png';
 import CourseCard from '../components/CourseCard';
 import { getCourses } from '../../services/courseServices';
 
@@ -56,29 +56,95 @@ export default function Landing() {
   return (
     <div className="flex-1 flex flex-col bg-navy-900 text-gray-100">
       {/* ========================================================================= */}
-      {/* HERO BANNER SECTION (Preserved exactly as is) */}
+      {/* TEXT-LED HERO */}
       {/* ========================================================================= */}
-      <section className="relative w-full overflow-hidden bg-navy-950">
-        <div className="relative w-full">
-          <img
-            src={heroBanner}
-            alt="Master Complex Skills the Learnova Way"
-            className="w-full h-auto block"
-          />
+      <section className="relative isolate overflow-hidden border-b border-navy-800/80 bg-navy-950">
+        <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full bg-accent-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-48 left-1/4 h-80 w-80 rounded-full bg-cyan-500/5 blur-3xl" />
 
-          {/* Clickable interactive hotspots for the buttons */}
-          <Link
-            to="/courses"
-            aria-label="Browse Courses"
-            className="absolute top-[54.5%] left-[37.2%] w-[14.2%] h-[7.2%] rounded-xl cursor-pointer transition-all hover:ring-2 hover:ring-accent-400/60 focus:outline-none focus:ring-2 focus:ring-accent-400"
-            title="Browse Courses"
-          />
-          <Link
-            to="/signup"
-            aria-label="Get Started"
-            className="absolute top-[54.5%] left-[52.4%] w-[10.6%] h-[7.2%] rounded-xl cursor-pointer transition-all hover:ring-2 hover:ring-accent-400/60 focus:outline-none focus:ring-2 focus:ring-accent-400"
-            title="Get Started"
-          />
+        <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16 lg:px-8 lg:py-24">
+          <div className="max-w-2xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-accent-500/25 bg-accent-500/10 px-4 py-2 text-xs font-semibold tracking-wide text-accent-400 sm:text-sm">
+              <Sparkles className="h-4 w-4" />
+              The New Standard in Intellectual Mastery
+            </div>
+
+            <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-7xl">
+              Master complex skills with{' '}
+              <span className="text-accent-500">editorial rigor.</span>
+            </h1>
+
+            <p className="mt-6 max-w-xl text-base leading-7 text-gray-300 sm:text-lg sm:leading-8">
+              Immersive, expert-led courses paired with thoughtful, one-on-one assignment reviews. Learn deeply, practice with purpose, and keep your progress moving.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                to="/courses"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 px-6 py-3 text-sm font-semibold text-black transition-colors duration-200 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-950 active:scale-[0.98] sm:text-base"
+              >
+                Browse Courses <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/signup"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-navy-700 bg-navy-900/70 px-6 py-3 text-sm font-semibold text-gray-100 transition-colors duration-200 hover:border-accent-500/50 hover:bg-navy-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 active:scale-[0.98] sm:text-base"
+              >
+                Get Started <ArrowRight className="h-4 w-4 text-accent-400" />
+              </Link>
+            </div>
+
+            <div className="mt-7 flex items-center gap-2 text-sm text-gray-400">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-accent-400" />
+              Learn at your pace and resume where you left off
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-xl">
+            <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-accent-500/15 via-transparent to-cyan-400/10 blur-xl" />
+            <div className="relative rounded-3xl border border-navy-700/80 bg-gradient-to-br from-navy-800 to-navy-950 p-5 shadow-2xl shadow-black/30 sm:p-7">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-400">The Learnova approach</span>
+                  <h2 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">Built for deeper learning</h2>
+                </div>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-accent-500/25 bg-accent-500/10 text-accent-400">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-4 rounded-2xl border border-navy-700/70 bg-navy-950/70 p-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 text-accent-400">
+                    <Layers className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Structured curriculum</h3>
+                    <p className="mt-1 text-sm leading-5 text-gray-400">Clear modules take you from foundations to practice.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 rounded-2xl border border-navy-700/70 bg-navy-950/70 p-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Progress that stays with you</h3>
+                    <p className="mt-1 text-sm leading-5 text-gray-400">Learn on your schedule and pick up where you stopped.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 rounded-2xl border border-navy-700/70 bg-navy-950/70 p-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-400/10 text-orange-300">
+                    <FileEdit className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Personal assignment reviews</h3>
+                    <p className="mt-1 text-sm leading-5 text-gray-400">Get thoughtful feedback on the work you submit.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -392,28 +458,28 @@ export default function Landing() {
       {/* ========================================================================= */}
       {/* SECTION 5 — Final CTA Banner */}
       {/* ========================================================================= */}
-      <section className="relative w-full py-24 sm:py-32 overflow-hidden border-t border-navy-800/80 bg-linear-to-b from-navy-950 via-navy-900 to-navy-950">
+      <section className="relative w-full overflow-hidden border-t border-navy-800/80 bg-linear-to-b from-navy-950 via-navy-900 to-navy-950 py-16 sm:py-24 lg:py-32">
         {/* Soft abstract ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 sm:w-200 h-75 sm:h-100 bg-accent-500/10 blur-[140px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-5 leading-tight">
+          <h2 className="mb-5 font-display text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
             Ready to Go Deeper?
           </h2>
-          <p className="text-gray-300 text-base sm:text-lg max-w-xl mx-auto mb-10 leading-relaxed font-normal">
+          <p className="mx-auto mb-8 max-w-xl text-base font-normal leading-relaxed text-gray-300 sm:mb-10 sm:text-lg">
             Join thousands of learners taking their skills seriously.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <Link
               to="/courses"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-navy-850 hover:bg-navy-800 border border-navy-700 text-white font-semibold text-base transition-all duration-200 active:scale-[0.98]"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-orange-700 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 px-6 py-3.5 text-base font-semibold text-black transition-colors duration-200 hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 active:scale-[0.98] sm:w-auto sm:px-8"
             >
               <span>Browse Courses</span>
-              <ArrowRight className="w-4 h-4 text-accent-400" />
+              <ArrowRight className="w-4 h-4 text-black" />
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-accent-500 hover:bg-accent-600 text-navy-950 font-semibold text-base transition-all duration-200 shadow-xl shadow-accent-500/25 active:scale-[0.98]"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-300 via-accent-500 to-orange-600 px-6 py-3.5 text-base font-semibold text-navy-950 shadow-xl shadow-orange-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-orange-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-200 active:scale-[0.98] sm:w-auto sm:px-8"
             >
               <span>Create Student Account</span>
               <ArrowRight className="w-4 h-4" />

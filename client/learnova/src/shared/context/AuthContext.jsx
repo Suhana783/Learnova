@@ -1,30 +1,30 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { loginUser, registerUser, verifyOTP } from '../../services/authService';
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+function readStoredSession() {
+  try {
+    const storedToken = localStorage.getItem('accessToken');
+    const storedUser = localStorage.getItem('user');
+    return {
+      token: storedToken,
+      user: storedUser ? JSON.parse(storedUser) : null,
+    };
+  } catch (err) {
+    console.error('Failed to restore auth session:', err);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    return { token: null, user: null };
+  }
+}
 
-  // Restore stored session on mount
-  useEffect(() => {
-    try {
-      const storedToken = localStorage.getItem('accessToken');
-      const storedUser = localStorage.getItem('user');
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (err) {
-      console.error('Failed to restore auth session:', err);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+export function AuthProvider({ children }) {
+  const [initialSession] = useState(readStoredSession);
+  const [user, setUser] = useState(initialSession.user);
+  const [token, setToken] = useState(initialSession.token);
+  const [loading] = useState(false);
 
   const handleAuthSuccess = (accessToken, refreshToken, userData) => {
     setToken(accessToken);
@@ -90,6 +90,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

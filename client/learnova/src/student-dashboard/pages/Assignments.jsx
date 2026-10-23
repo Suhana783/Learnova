@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../shared/context/AuthContext';
 import { uploadAssignment, getAssignments } from '../../services/assignmentService';
 import {
@@ -10,8 +10,6 @@ import {
   UploadCloud,
   X,
   Loader2,
-  Calendar,
-  FileCode,
   FileCheck,
 } from 'lucide-react';
 
@@ -34,22 +32,24 @@ export default function Assignments() {
   const [assignments, setAssignments] = useState([]);
 
   // Fetch student's real submissions
-  const fetchMyAssignments = async () => {
+  const fetchMyAssignments = useCallback(async () => {
     if (!user?.email) return;
     setIsLoadingList(true);
     try {
-      const res = await getAssignments({ studentEmail: user.email });
+      const res = await getAssignments();
       setAssignments(res.data || []);
     } catch (err) {
       console.error('Failed to fetch assignments:', err);
     } finally {
       setIsLoadingList(false);
     }
-  };
+  }, [user?.email]);
 
   useEffect(() => {
+    // Fetch and update the page's loading and submissions state after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMyAssignments();
-  }, [user?.email]);
+  }, [fetchMyAssignments]);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];

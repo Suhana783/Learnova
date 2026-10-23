@@ -1,6 +1,5 @@
-import React from 'react';
 import { useAuth } from '../../shared/context/AuthContext';
-import { Menu, User, FileUp, Sparkles } from 'lucide-react';
+import { Menu, FileUp } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function StudentHeader({ onToggleMobile }) {

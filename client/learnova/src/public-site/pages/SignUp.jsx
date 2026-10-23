@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/context/AuthContext';
 import {
@@ -93,7 +93,6 @@ export default function SignUp() {
         phone: formData.phone.trim(),
         address: formData.address.trim(),
         interestedIn: formData.interestedIn.trim(),
-        role: 'user',
       });
 
       setSuccessMsg(res.message || 'OTP sent successfully! Check your email.');
@@ -142,7 +141,7 @@ export default function SignUp() {
 
     setIsLoading(true);
     try {
-      const res = await verifyAndRegister(formData.email.trim().toLowerCase(), fullOtp);
+      await verifyAndRegister(formData.email.trim().toLowerCase(), fullOtp);
       setSuccessMsg('Account verified successfully! Redirecting to dashboard...');
       setTimeout(() => {
         navigate('/student/dashboard');
@@ -166,7 +165,6 @@ export default function SignUp() {
         phone: formData.phone.trim(),
         address: formData.address.trim(),
         interestedIn: formData.interestedIn.trim(),
-        role: 'user',
       });
       setSuccessMsg('A new OTP has been sent to your email.');
     } catch (err) {

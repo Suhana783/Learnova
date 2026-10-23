@@ -1,13 +1,13 @@
 const Enroll = require('../model/enroll.model');
 
 const enrollUserService = async (userId, courseId) => {
+    const existingEnrollment = await Enroll.findOne({ userId, courseId });
+    if (existingEnrollment) return existingEnrollment;
 
-    const enroll = await Enroll.create({
+    return Enroll.create({
         userId,
         courseId,
     });
-
-    return enroll;
 };
 
 const getMyEnrollmentService = async (userId) => {

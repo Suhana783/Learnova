@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ArrowRight, LayoutDashboard, User, LogOut } from 'lucide-react';
+import { Menu, X, ArrowRight, LogOut } from 'lucide-react';
 import LearnovaLogo from '../../shared/components/LearnovaLogo';
 import { useAuth } from '../../shared/context/AuthContext';
 
@@ -15,7 +15,7 @@ export default function Navbar() {
   };
 
   const navLinkClasses = ({ isActive }) =>
-    `text-sm font-medium transition-colors duration-200 ${
+    `text-base font-semibold transition-colors duration-200 ${
       isActive ? 'text-accent-500' : 'text-gray-300 hover:text-white'
     }`;
 
@@ -112,14 +112,14 @@ export default function Navbar() {
             <NavLink
               to="/"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-md text-base font-medium text-gray-200 hover:bg-navy-800 hover:text-accent-400"
+              className="px-3 py-2 rounded-md text-base font-semibold text-gray-200 hover:bg-navy-800 hover:text-accent-400"
             >
               Home
             </NavLink>
             <NavLink
               to="/courses"
               onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 rounded-md text-base font-medium text-gray-200 hover:bg-navy-800 hover:text-accent-400"
+              className="px-3 py-2 rounded-md text-base font-semibold text-gray-200 hover:bg-navy-800 hover:text-accent-400"
             >
               Course Catalog
             </NavLink>

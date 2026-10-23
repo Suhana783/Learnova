@@ -210,7 +210,7 @@ export default function Overview() {
     const fetch = async () => {
       try {
         if (user?.email) {
-          const res = await getAssignments({ studentEmail: user.email });
+          const res = await getAssignments();
           setAssignments(res.data || []);
         }
       } catch (err) {

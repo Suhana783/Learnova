@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../shared/context/AuthContext';
 import { getUserProfile, updateUserProfile } from '../../services/userService';
 import {
@@ -14,7 +14,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  Calendar,
 } from 'lucide-react';
 
 export default function Profile() {
@@ -22,7 +21,6 @@ export default function Profile() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -37,7 +35,6 @@ export default function Profile() {
   // Fetch latest profile from backend on mount
   useEffect(() => {
     const fetchLatestProfile = async () => {
-      setFetching(true);
       try {
         const res = await getUserProfile();
         if (res.data) {
@@ -52,11 +49,10 @@ export default function Profile() {
       } catch (err) {
         // Fallback to locally stored user object
         console.warn('Could not fetch server profile, using stored session:', err);
-      } finally {
-        setFetching(false);
       }
     };
     fetchLatestProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e) => {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/context/AuthContext';
 import {
@@ -10,7 +9,6 @@ import {
   Sparkles,
   ChevronRight,
   ShieldCheck,
-  BookOpen,
 } from 'lucide-react';
 import LearnovaLogo from '../../shared/components/LearnovaLogo';
 
