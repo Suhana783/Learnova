@@ -24,13 +24,11 @@ import {
   completeLesson,
 } from '../../services/progressService';
 
-// ─── YouTube embed URL helper ─────────────────────────────────────────────────
 function buildEmbedUrl(videoId) {
   if (!videoId) return null;
   return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
 }
 
-// ─── Sub-component: ModulePanel ───────────────────────────────────────────────
 function ModulePanel({
   mod,
   isOpen,
@@ -121,7 +119,6 @@ function ModulePanel({
   );
 }
 
-// ─── Main CourseLearning Page ────────────────────────────────────────────────
 export default function CourseLearning() {
   const { courseId } = useParams();
   const { isAuthenticated, loading: authLoading } = useAuth();
@@ -365,7 +362,7 @@ export default function CourseLearning() {
 
   return (
     <div className="min-h-screen bg-navy-900 text-gray-100 flex flex-col">
-      {/* ── Top Bar ── */}
+
       <header className="sticky top-0 z-30 bg-navy-950/90 backdrop-blur-md border-b border-navy-800 px-4 sm:px-6 py-3 flex items-center gap-4">
         <Link
           to="/student/dashboard"
@@ -403,11 +400,10 @@ export default function CourseLearning() {
         </div>
       </header>
 
-      {/* ── Body: Two Columns ── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* ── LEFT: Video + Lesson Info ── */}
+
         <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* Video Player */}
+
           <div className="w-full bg-black aspect-video relative">
             {embedUrl ? (
               <iframe
@@ -428,15 +424,13 @@ export default function CourseLearning() {
             )}
           </div>
 
-          {/* Lesson Details */}
           {selectedLesson && (
             <div className="p-4 sm:p-6 space-y-4 max-w-4xl w-full mx-auto">
-              {/* Module breadcrumb */}
+
               <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
                 {selectedModule?.title}
               </p>
 
-              {/* Lesson title */}
               <h2 className="text-xl sm:text-2xl font-bold text-white leading-snug">
                 {selectedLesson.title}
               </h2>
@@ -447,7 +441,6 @@ export default function CourseLearning() {
                 </p>
               )}
 
-              {/* Action row: Prev/Next + Mark Complete */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={() => navigateLesson(-1)}
@@ -487,7 +480,6 @@ export default function CourseLearning() {
                   <SkipForward className="w-4 h-4" />
                 </button>
 
-                {/* Open on YouTube */}
                 {selectedLesson.videoUrl && (
                   <a
                     href={selectedLesson.videoUrl}
@@ -515,7 +507,6 @@ export default function CourseLearning() {
                 </p>
               )}
 
-              {/* Course Resources */}
               {course.resources && course.resources.length > 0 && (
                 <div className="pt-4 border-t border-navy-800">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
@@ -539,7 +530,6 @@ export default function CourseLearning() {
                 </div>
               )}
 
-              {/* Lesson Resources */}
               {selectedLesson.resources && selectedLesson.resources.length > 0 && (
                 <div className="pt-2">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
@@ -562,7 +552,6 @@ export default function CourseLearning() {
             </div>
           )}
 
-          {/* Empty state */}
           {!selectedLesson && !loading && (
             <div className="flex-1 flex flex-col items-center justify-center py-16 px-4 text-center">
               <BookOpen className="w-12 h-12 text-navy-700 mb-4" />
@@ -573,14 +562,13 @@ export default function CourseLearning() {
           )}
         </div>
 
-        {/* ── RIGHT: Curriculum Sidebar ── */}
         <aside className="hidden lg:flex flex-col w-80 xl:w-96 border-l border-navy-800 bg-navy-950/60 overflow-y-auto shrink-0">
           <div className="p-4 border-b border-navy-800">
             <h3 className="text-sm font-bold text-white">Course Curriculum</h3>
             <p className="text-xs text-gray-400 mt-0.5">
               {flat.length} lessons · {modules.length} modules
             </p>
-            {/* Progress bar in sidebar */}
+
             <div className="mt-3 w-full bg-navy-800 rounded-full h-1.5 overflow-hidden">
               <div
                 className="h-full bg-accent-500 rounded-full transition-all duration-500"
@@ -633,7 +621,6 @@ export default function CourseLearning() {
         </aside>
       </div>
 
-      {/* ── Mobile Curriculum (collapsible at bottom) ── */}
       <MobileCurriculumPanel
         modules={modules}
         flat={flat}
@@ -649,7 +636,6 @@ export default function CourseLearning() {
   );
 }
 
-// ─── Mobile curriculum collapsible ───────────────────────────────────────────
 function MobileCurriculumPanel({
   modules,
   flat,

@@ -4,20 +4,20 @@ export default {
     extend: {
       colors: {
         navy: {
-          950: '#0e1626',   // deepest background (softened from near-black)
-          900: '#141e33',   // main background
-          800: '#1c2942',   // card backgrounds
-          700: '#283958',   // borders/dividers
+          950: '#0e1626',
+          900: '#141e33',
+          800: '#1c2942',
+          700: '#283958',
         },
         accent: {
-          400: '#ffb088',   // lighter hover states
-          500: '#ff8c5a',   // primary orange/coral
-          600: '#e56b3a',   // pressed/darker
+          400: '#ffb088',
+          500: '#ff8c5a',
+          600: '#e56b3a',
         },
       },
       fontFamily: {
-        display: ['"Playfair Display"', 'serif'],  // headings
-        body: ['"Inter"', 'sans-serif'],            // body text
+        display: ['"Playfair Display"', 'serif'],
+        body: ['"Inter"', 'sans-serif'],
       },
     },
   },

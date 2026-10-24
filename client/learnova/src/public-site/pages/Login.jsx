@@ -54,7 +54,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-navy-950 py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center relative overflow-hidden">
-      {/* Glow effects */}
+
       <div className="absolute top-1/4 -right-32 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -left-32 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 

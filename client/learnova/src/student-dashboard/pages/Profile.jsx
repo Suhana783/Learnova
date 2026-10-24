@@ -24,7 +24,6 @@ export default function Profile() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Editable fields
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
@@ -32,7 +31,6 @@ export default function Profile() {
     interestedIn: user?.interestedIn || '',
   });
 
-  // Fetch latest profile from backend on mount
   useEffect(() => {
     const fetchLatestProfile = async () => {
       try {
@@ -47,7 +45,6 @@ export default function Profile() {
           });
         }
       } catch (err) {
-        // Fallback to locally stored user object
         console.warn('Could not fetch server profile, using stored session:', err);
       }
     };
@@ -97,7 +94,7 @@ export default function Profile() {
 
   return (
     <div className="max-w-4xl space-y-6">
-      {/* Notifications */}
+
       {error && (
         <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center gap-3 text-red-300 text-sm">
           <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
@@ -112,7 +109,6 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Profile Overview Card */}
       <div className="bg-navy-950/80 border border-navy-800/80 rounded-2xl p-6 sm:p-8 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-navy-800">
           <div className="flex items-center gap-4">
@@ -169,10 +165,9 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Profile Details Form / Display */}
         <div className="pt-6">
           <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Full Name */}
+
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Full Name
@@ -199,7 +194,6 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Email Address (Always read-only since verified by OTP) */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -213,7 +207,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Phone Number */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Phone Number
@@ -239,7 +232,6 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Address */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Address
@@ -265,7 +257,6 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Area of Interest (Optional) */}
             <div className="sm:col-span-2">
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Interested In (Specialization Track)

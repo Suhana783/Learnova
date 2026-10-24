@@ -23,12 +23,11 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-navy-950/90 backdrop-blur-md border-b border-navy-700/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left: Brand Logo */}
+
           <div className="flex items-center">
             <LearnovaLogo size="md" />
           </div>
 
-          {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8">
             <NavLink to="/" className={navLinkClasses}>
               Home
@@ -43,7 +42,6 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* Right Action Buttons */}
           <div className="hidden md:flex items-center gap-2 sm:gap-3">
             {isAuthenticated ? (
               <>
@@ -91,7 +89,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile Menu Hamburger Toggle */}
           <div className="flex md:hidden items-center gap-3">
             <button
               type="button"
@@ -105,7 +102,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-navy-700 bg-navy-900/95 backdrop-blur-lg px-4 pt-3 pb-6 space-y-4">
           <nav className="flex flex-col gap-2">

@@ -1,9 +1,5 @@
 import { Link } from 'react-router-dom';
 
-/**
- * LearnovaLogo Component
- * Renders the ivory badge with the stylized coral book/L emblem and optional brand name.
- */
 export default function LearnovaLogo({ showText = true, size = 'md', className = '' }) {
   const iconSizes = {
     sm: 'w-7 h-7 p-1',
@@ -19,7 +15,7 @@ export default function LearnovaLogo({ showText = true, size = 'md', className =
 
   return (
     <Link to="/" className={`inline-flex items-center gap-3 group focus:outline-none ${className}`}>
-      {/* Ivory badge background as seen in Stitch mockup */}
+
       <div
         className={`${iconSizes[size] || iconSizes.md} rounded-lg bg-[#FAF7F2] shadow-sm flex items-center justify-center transition-transform duration-200 group-hover:scale-105`}
         title="Learnova"
@@ -30,7 +26,7 @@ export default function LearnovaLogo({ showText = true, size = 'md', className =
           xmlns="http://www.w3.org/2000/svg"
           className="w-full h-full text-accent-600"
         >
-          {/* Stylized Book with interwoven L flourish */}
+
           <path
             d="M8 12C8 9.79 9.79 8 12 8H18V28H12C9.79 28 8 26.21 8 24V12Z"
             stroke="currentColor"
@@ -51,7 +47,7 @@ export default function LearnovaLogo({ showText = true, size = 'md', className =
             strokeWidth="2"
             strokeLinecap="round"
           />
-          {/* Calligraphic flourish simulating the open pages / 'L' */}
+
           <path
             d="M13 14H16M13 19H16M24 14H27M24 19H27"
             stroke="currentColor"

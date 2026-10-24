@@ -22,9 +22,6 @@ export default function CourseCard({
   const displayDuration = duration || (isPlaylist ? 'Full Playlist' : 'Single Video');
   const displayRating = typeof rating === 'number' && rating > 0 ? rating.toFixed(1) : '4.9';
 
-  // =========================================================================
-  // COMPACT VARIANT (Used on Home Page / Previews)
-  // =========================================================================
   if (compact) {
     return (
       <div
@@ -33,7 +30,7 @@ export default function CourseCard({
         }`}
       >
         <div>
-          {/* Compact Top Image: Proportional & uncropped */}
+
           {image && (
             <div className="relative w-full h-44 sm:h-48 overflow-hidden bg-navy-950/95 border-b border-navy-700/60">
               <img
@@ -53,7 +50,7 @@ export default function CourseCard({
           )}
 
           <div className="p-5">
-            {/* Header Badges */}
+
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
               <div className="flex items-center gap-1.5 flex-wrap">
                 {difficulty && (
@@ -80,19 +77,16 @@ export default function CourseCard({
               </div>
             </div>
 
-            {/* Title */}
             <h3 className="font-display text-lg sm:text-xl font-bold text-white group-hover:text-accent-400 transition-colors mb-2 leading-snug">
               <Link to={courseLink}>{title}</Link>
             </h3>
 
-            {/* Concise Description */}
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed line-clamp-2 mb-3">
               {description}
             </p>
           </div>
         </div>
 
-        {/* Compact Footer */}
         <div className="px-5 pb-5 pt-0">
           <div className="flex items-center justify-between text-xs text-gray-400 border-t border-navy-700/60 pt-3 mb-3">
             <div className="flex items-center gap-1.5">
@@ -117,9 +111,6 @@ export default function CourseCard({
     );
   }
 
-  // =========================================================================
-  // FULL-SIZE VARIANT (Used on Courses Catalog Page)
-  // =========================================================================
   return (
     <div
       className={`relative flex flex-col justify-between rounded-3xl bg-navy-800/85 border transition-all duration-300 overflow-hidden shadow-xl shadow-navy-950/40 group hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-navy-950/70 ${
@@ -127,7 +118,7 @@ export default function CourseCard({
       }`}
     >
       <div>
-        {/* Top Image: Generous width & height, never cropped */}
+
         {image && (
           <div className="relative w-full h-64 sm:h-72 lg:h-80 overflow-hidden bg-navy-950/95 border-b border-navy-700/60">
             <img
@@ -146,9 +137,8 @@ export default function CourseCard({
           </div>
         )}
 
-        {/* Card Body with Rich Content */}
         <div className="p-6 sm:p-8">
-          {/* Header Badges: Level Pill, Category, Rating */}
+
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               {difficulty && (
@@ -176,17 +166,14 @@ export default function CourseCard({
             </div>
           </div>
 
-          {/* Large Editorial Title */}
           <h3 className="font-display text-2xl sm:text-3xl font-bold text-white group-hover:text-accent-400 transition-colors mb-3 leading-snug">
             <Link to={courseLink}>{title}</Link>
           </h3>
 
-          {/* Rich Description */}
           <p className="text-sm sm:text-base text-gray-300 leading-relaxed mb-5">
             {description}
           </p>
 
-          {/* Topics / Skills Tags */}
           {topics && topics.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {topics.map((topic) => (
@@ -202,12 +189,10 @@ export default function CourseCard({
         </div>
       </div>
 
-      {/* Card Footer: Metadata Block + Explore Action Button */}
       <div className="px-6 pb-6 sm:px-8 sm:pb-8 pt-0">
-        {/* Divider */}
+
         <div className="border-t border-navy-700/60 my-4" />
 
-        {/* Two-Column Metadata Stats: Level & Duration */}
         <div className="grid grid-cols-2 gap-4 py-1 mb-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-navy-900 border border-navy-700/80 flex items-center justify-center text-accent-500 shrink-0">
@@ -234,7 +219,6 @@ export default function CourseCard({
           </div>
         </div>
 
-        {/* Pill-shaped Action Button */}
         <Link
           to={courseLink}
           className="inline-flex items-center justify-center gap-2.5 py-3 px-6 rounded-2xl border-2 border-accent-500/80 hover:border-accent-500 text-accent-400 hover:bg-accent-500 hover:text-navy-950 font-bold text-sm sm:text-base transition-all duration-200 shadow-md active:scale-[0.99] w-full sm:w-auto"

@@ -17,21 +17,17 @@ export default function Assignments() {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
 
-  // Upload Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // UI state
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Submissions list
   const [assignments, setAssignments] = useState([]);
 
-  // Fetch student's real submissions
   const fetchMyAssignments = useCallback(async () => {
     if (!user?.email) return;
     setIsLoadingList(true);
@@ -46,7 +42,6 @@ export default function Assignments() {
   }, [user?.email]);
 
   useEffect(() => {
-    // Fetch and update the page's loading and submissions state after mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMyAssignments();
   }, [fetchMyAssignments]);
@@ -54,7 +49,6 @@ export default function Assignments() {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file format
       const validExtensions = ['pdf', 'png', 'jpg', 'jpeg'];
       const fileExt = file.name.split('.').pop().toLowerCase();
       if (!validExtensions.includes(fileExt)) {
@@ -65,7 +59,6 @@ export default function Assignments() {
       setError('');
       setSelectedFile(file);
       if (!title) {
-        // Auto-fill title from filename without extension
         const cleanName = file.name.replace(/\.[^/.]+$/, '');
         setTitle(cleanName);
       }
@@ -133,7 +126,6 @@ export default function Assignments() {
         fileInputRef.current.value = '';
       }
 
-      // Refresh submissions
       await fetchMyAssignments();
     } catch (err) {
       setError(
@@ -153,7 +145,7 @@ export default function Assignments() {
 
   return (
     <div className="space-y-8 max-w-5xl">
-      {/* Alert Messages */}
+
       {error && (
         <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center gap-3 text-red-300 text-sm">
           <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
@@ -168,7 +160,6 @@ export default function Assignments() {
         </div>
       )}
 
-      {/* Upload New Assignment Section */}
       <div className="bg-navy-950/80 border border-navy-800/80 rounded-2xl p-6 sm:p-8 shadow-xl">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-accent-500/15 border border-accent-500/30 text-accent-500 flex items-center justify-center">
@@ -186,7 +177,7 @@ export default function Assignments() {
 
         <form onSubmit={handleUploadSubmit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Title */}
+
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                 Assignment Title <span className="text-accent-500">*</span>
@@ -201,7 +192,6 @@ export default function Assignments() {
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
                 Notes / Comments (Optional)
@@ -216,7 +206,6 @@ export default function Assignments() {
             </div>
           </div>
 
-          {/* Drag & Drop File Zone */}
           <div>
             <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
               Assignment File <span className="text-accent-500">*</span>
@@ -285,7 +274,6 @@ export default function Assignments() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end pt-2">
             <button
               type="submit"
@@ -308,7 +296,6 @@ export default function Assignments() {
         </form>
       </div>
 
-      {/* Submissions List Section (Real Data, NO Fake Data) */}
       <div className="bg-navy-950/80 border border-navy-800/80 rounded-2xl p-6 sm:p-8 shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

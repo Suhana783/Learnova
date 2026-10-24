@@ -42,14 +42,13 @@ export default function StudentSidebar({ onCloseMobile }) {
 
   return (
     <aside className="w-64 bg-navy-950 border-r border-navy-750/70 flex flex-col h-full select-none">
-      {/* Brand & Logo */}
+
       <div className="p-5 border-b border-navy-850 flex items-center justify-between">
         <div onClick={onCloseMobile} className="inline-block">
           <LearnovaLogo size="md" />
         </div>
       </div>
 
-      {/* Nav Menu */}
       <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
         <div className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
           Student Portal
@@ -100,7 +99,6 @@ export default function StudentSidebar({ onCloseMobile }) {
         </Link>
       </div>
 
-      {/* Bottom: Student Profile Card & Logout */}
       <div className="p-3 border-t border-navy-850 bg-navy-900/60">
         <div className="p-2.5 rounded-xl bg-navy-950/80 border border-navy-800/80 mb-2">
           <div className="flex items-center gap-3">

@@ -21,7 +21,6 @@ export default function SignUp() {
   const navigate = useNavigate();
   const { sendRegistrationOtp, verifyAndRegister } = useAuth();
 
-  // Form State
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -31,24 +30,20 @@ export default function SignUp() {
     interestedIn: '',
   });
 
-  // Step 1: registration fields, Step 2: OTP verification
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
 
-  // UI state
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // For password, restrict to max 6 digits numeric
     if (name === 'password') {
       const numericVal = value.replace(/\D/g, '').slice(0, 6);
       setFormData((prev) => ({ ...prev, [name]: numericVal }));
       return;
     }
-    // For phone, clean numbers
     if (name === 'phone') {
       const numericPhone = value.replace(/[^\d+ -]/g, '').slice(0, 15);
       setFormData((prev) => ({ ...prev, [name]: numericPhone }));
@@ -62,7 +57,6 @@ export default function SignUp() {
     setError('');
     setSuccessMsg('');
 
-    // Validation
     if (!formData.name.trim()) {
       setError('Please enter your full name.');
       return;
@@ -112,7 +106,6 @@ export default function SignUp() {
     newOtp[index] = val;
     setOtp(newOtp);
 
-    // Auto advance next input
     if (val && index < 5) {
       const nextInput = document.getElementById(`otp-input-${index + 1}`);
       if (nextInput) nextInput.focus();
@@ -176,12 +169,12 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen bg-navy-950 py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center relative overflow-hidden">
-      {/* Decorative gradient glow */}
+
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-xl z-10">
-        {/* Header Branding */}
+
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <LearnovaLogo size="lg" />
@@ -196,9 +189,8 @@ export default function SignUp() {
           </p>
         </div>
 
-        {/* Card Box */}
         <div className="bg-navy-900/90 border border-navy-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-          {/* Error Alert */}
+
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-500/15 border border-red-500/30 flex items-start gap-3 text-red-300 text-sm animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
@@ -218,7 +210,6 @@ export default function SignUp() {
             </div>
           )}
 
-          {/* Success Alert */}
           {successMsg && (
             <div className="mb-6 p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-start gap-3 text-emerald-300 text-sm animate-fadeIn">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
@@ -226,10 +217,9 @@ export default function SignUp() {
             </div>
           )}
 
-          {/* Step 1: Student Information Form */}
           {step === 1 && (
             <form onSubmit={handleSendOtp} className="space-y-4">
-              {/* Full Name */}
+
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
                   Full Name <span className="text-accent-500">*</span>
@@ -250,7 +240,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Email Address */}
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
                   Email Address <span className="text-accent-500">*</span>
@@ -271,7 +260,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Password (6 Digits) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider">
@@ -299,7 +287,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Phone Number */}
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
                   Phone Number <span className="text-accent-500">*</span>
@@ -320,7 +307,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Address */}
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
                   Address <span className="text-accent-500">*</span>
@@ -341,7 +327,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Interested In (Optional) */}
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1.5">
                   Interested In <span className="text-gray-400 text-[11px] font-normal">(Optional)</span>
@@ -368,7 +353,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <div className="pt-2">
                 <button
                   type="submit"
@@ -391,7 +375,6 @@ export default function SignUp() {
             </form>
           )}
 
-          {/* Step 2: OTP Verification Form */}
           {step === 2 && (
             <form onSubmit={handleVerifyOtp} className="space-y-6">
               <div className="text-center py-2">
@@ -406,7 +389,6 @@ export default function SignUp() {
                 </p>
               </div>
 
-              {/* 6 Digit OTP Inputs */}
               <div>
                 <label className="block text-center text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                   6-Digit OTP Code
@@ -429,7 +411,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Verify Button */}
               <button
                 type="submit"
                 disabled={isLoading}
@@ -448,7 +429,6 @@ export default function SignUp() {
                 )}
               </button>
 
-              {/* Actions: Resend or Edit details */}
               <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-navy-800">
                 <button
                   type="button"
@@ -470,7 +450,6 @@ export default function SignUp() {
             </form>
           )}
 
-          {/* Already have an account link */}
           <div className="mt-6 pt-5 border-t border-navy-800/80 text-center text-sm text-gray-400">
             Already registered?{' '}
             <Link to="/login" className="text-accent-400 hover:text-accent-300 font-semibold transition-colors">

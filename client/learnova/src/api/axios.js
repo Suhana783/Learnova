@@ -4,7 +4,6 @@ const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 });
 
-// Request interceptor: attach bearer token
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -13,7 +12,6 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// Response interceptor: automatically refresh expired access token
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -36,7 +34,6 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             const refreshToken = localStorage.getItem('refreshToken');
 
-            // Skip refresh if no refreshToken or if request was auth endpoint
             if (
                 !refreshToken ||
                 originalRequest.url?.includes('/auth/refresh-token') ||

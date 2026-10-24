@@ -15,7 +15,7 @@ export default function StudentHeader({ onToggleMobile }) {
 
   return (
     <header className="sticky top-0 z-30 bg-navy-950/80 backdrop-blur-md border-b border-navy-800/80 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
-      {/* Left: Mobile trigger & Page Title */}
+
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -38,7 +38,6 @@ export default function StudentHeader({ onToggleMobile }) {
         </div>
       </div>
 
-      {/* Right: Quick actions */}
       <div className="flex items-center gap-3">
         <Link
           to="/student/assignments"

@@ -6,16 +6,15 @@ export default function Footer() {
     <footer className="bg-navy-950 border-t border-navy-800 text-gray-400 text-sm mt-auto relative z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
-          {/* Left Column: Logo + Tagline + Social Icons */}
+
           <div className="space-y-4 md:col-span-2">
             <LearnovaLogo size="md" />
             <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
               Master complex skills through expert-led courses and rigorous, 1-on-1 editorial assignment reviews.
             </p>
 
-            {/* Social Icons Placeholders: Twitter/X, LinkedIn, GitHub */}
             <div className="flex items-center gap-3 pt-2">
-              {/* X / Twitter */}
+
               <a
                 href="https://x.com"
                 target="_blank"
@@ -28,7 +27,6 @@ export default function Footer() {
                 </svg>
               </a>
 
-              {/* LinkedIn */}
               <a
                 href="https://linkedin.com"
                 target="_blank"
@@ -41,7 +39,6 @@ export default function Footer() {
                 </svg>
               </a>
 
-              {/* GitHub */}
               <a
                 href="https://github.com"
                 target="_blank"
@@ -56,7 +53,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Middle Column: Platform Links */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-200">Platform</h3>
             <ul className="space-y-2.5">
@@ -83,7 +79,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Right Column: Company Links */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-200">Company</h3>
             <ul className="space-y-2.5">
@@ -111,7 +106,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-navy-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>© 2026 Learnova. All rights reserved.</p>
           <p className="text-gray-400 font-medium">

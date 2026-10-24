@@ -36,12 +36,10 @@ export default function CourseCatalog() {
   };
 
   useEffect(() => {
-    // The request updates loading and result state after the component mounts.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCourses();
   }, []);
 
-  // Extract unique categories dynamically from the fetched courses
   const categories = useMemo(() => {
     const unique = Array.from(
       new Set(courses.map((c) => c.category).filter(Boolean))
@@ -51,7 +49,6 @@ export default function CourseCatalog() {
 
   const difficulties = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
-  // Filtered courses based on search, difficulty, and category
   const filteredCourses = useMemo(() => {
     return courses.filter((course) => {
       const term = searchTerm.trim().toLowerCase();
@@ -90,7 +87,7 @@ export default function CourseCatalog() {
 
   return (
     <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 w-full">
-      {/* Page Header */}
+
       <div className="border-b border-navy-800 pb-8 mb-10">
         <span className="text-xs font-semibold uppercase tracking-widest text-accent-500 mb-2 block">
           Curriculum Catalog
@@ -103,10 +100,9 @@ export default function CourseCatalog() {
         </p>
       </div>
 
-      {/* Filter and Search Controls */}
       <div className="bg-navy-800/60 border border-navy-700/70 rounded-2xl p-4 sm:p-6 mb-10 shadow-lg shadow-navy-950/20 backdrop-blur-sm">
         <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
-          {/* Search Bar */}
+
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -128,9 +124,8 @@ export default function CourseCatalog() {
             )}
           </div>
 
-          {/* Filter Controls */}
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
-            {/* Category / Topic Filter */}
+
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:inline">Topic:</span>
               <select
@@ -146,7 +141,6 @@ export default function CourseCatalog() {
               </select>
             </div>
 
-            {/* Difficulty Filter */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:inline">Level:</span>
               <select
@@ -162,7 +156,6 @@ export default function CourseCatalog() {
               </select>
             </div>
 
-            {/* Reset Filters button */}
             {hasActiveFilters && (
               <button
                 type="button"
@@ -177,7 +170,6 @@ export default function CourseCatalog() {
           </div>
         </div>
 
-        {/* Status / Count bar */}
         <div className="flex items-center justify-between text-xs text-gray-400 mt-4 pt-3 border-t border-navy-700/50">
           <span>
             {loading ? (
@@ -195,7 +187,6 @@ export default function CourseCatalog() {
         </div>
       </div>
 
-      {/* Loading Skeleton */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {[1, 2, 3, 4].map((n) => (
@@ -221,7 +212,7 @@ export default function CourseCatalog() {
           ))}
         </div>
       ) : error ? (
-        /* Error State */
+
         <div className="rounded-2xl border border-rose-500/30 bg-navy-900/80 p-10 sm:p-14 text-center shadow-lg max-w-xl mx-auto">
           <AlertCircle className="w-12 h-12 text-rose-400 mx-auto mb-4" />
           <h3 className="font-display text-xl font-bold text-white mb-2">
@@ -240,7 +231,7 @@ export default function CourseCatalog() {
           </button>
         </div>
       ) : courses.length === 0 ? (
-        /* Empty Database State */
+
         <div className="rounded-2xl border border-navy-800 bg-navy-900/60 p-12 text-center shadow-lg">
           <BookOpen className="w-12 h-12 text-accent-500/70 mx-auto mb-4" />
           <h3 className="font-display text-xl font-bold text-white mb-2">
@@ -251,7 +242,7 @@ export default function CourseCatalog() {
           </p>
         </div>
       ) : filteredCourses.length > 0 ? (
-        /* Courses Cards Grid - 2 cards per row with expanded width & generous gap */
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {filteredCourses.map((course) => (
             <CourseCard
@@ -282,7 +273,7 @@ export default function CourseCatalog() {
           ))}
         </div>
       ) : (
-        /* Empty Filter State */
+
         <div className="rounded-2xl border border-navy-800 bg-navy-900/60 p-12 text-center shadow-lg">
           <SearchX className="w-12 h-12 text-accent-500/70 mx-auto mb-4" />
           <h3 className="font-display text-xl font-bold text-white mb-2">

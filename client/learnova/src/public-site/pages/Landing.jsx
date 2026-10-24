@@ -38,7 +38,6 @@ export default function Landing() {
       } catch (err) {
         console.error('Failed to load courses on landing:', err);
         if (isMounted) {
-          // Preserving the existing error handling logic
           setError('Failed to load courses. Please try again later.');
         }
       } finally {
@@ -55,9 +54,7 @@ export default function Landing() {
   }, []);
   return (
     <div className="flex-1 flex flex-col bg-navy-900 text-gray-100">
-      {/* ========================================================================= */}
-      {/* TEXT-LED HERO */}
-      {/* ========================================================================= */}
+
       <section className="relative isolate overflow-hidden border-b border-navy-800/80 bg-navy-950">
         <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full bg-accent-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-48 left-1/4 h-80 w-80 rounded-full bg-cyan-500/5 blur-3xl" />
@@ -148,9 +145,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* SECTION 1 — "How It Works" (3-Step Process) */}
-      {/* ========================================================================= */}
       <section className="py-20 sm:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -163,11 +157,11 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-            {/* Step 1 */}
+
             <div className="relative rounded-2xl bg-navy-800/70 border border-navy-700/70 p-8 flex flex-col justify-between hover:border-navy-600 transition-all duration-300 shadow-lg shadow-navy-950/40 group">
-              {/* Connector line to next card on desktop */}
+
               <div className="hidden md:block absolute top-1/2 -right-4 w-8 border-t-2 border-dashed border-navy-700/80 z-20 pointer-events-none" />
-              
+
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <div className="w-14 h-14 rounded-2xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center text-accent-400 group-hover:scale-105 transition-transform">
@@ -186,9 +180,8 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Step 2 */}
             <div className="relative rounded-2xl bg-navy-800/70 border border-navy-700/70 p-8 flex flex-col justify-between hover:border-navy-600 transition-all duration-300 shadow-lg shadow-navy-950/40 group">
-              {/* Connector line to next card on desktop */}
+
               <div className="hidden md:block absolute top-1/2 -right-4 w-8 border-t-2 border-dashed border-navy-700/80 z-20 pointer-events-none" />
 
               <div>
@@ -209,7 +202,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Step 3 */}
             <div className="relative rounded-2xl bg-navy-800/70 border border-navy-700/70 p-8 flex flex-col justify-between hover:border-navy-600 transition-all duration-300 shadow-lg shadow-navy-950/40 group">
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -232,9 +224,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* SECTION 2 — Featured Courses Preview */}
-      {/* ========================================================================= */}
       <section className="py-20 sm:py-28 border-t border-navy-800/80 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
@@ -258,7 +247,6 @@ export default function Landing() {
             </Link>
           </div>
 
-          {/* Dynamic Curated Course Cards - Compact preview grid for Home Page */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map((n) => (
@@ -319,7 +307,6 @@ export default function Landing() {
             </div>
           )}
 
-          {/* Centered Button Linking to /courses */}
           <div className="text-center mt-14">
             <Link
               to="/courses"
@@ -332,9 +319,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* SECTION 3 — Why Learnova (Value Props Grid) */}
-      {/* ========================================================================= */}
       <section className="py-20 sm:py-28 border-t border-navy-800/80 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -347,7 +331,7 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {/* Value Prop 1: Real Feedback, Not Just Grades (Featured double width) */}
+
             <div className="rounded-2xl bg-linear-to-br from-navy-800 to-navy-900 border border-navy-700/90 p-8 sm:p-10 flex flex-col justify-between shadow-xl shadow-navy-950/40 md:col-span-2 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/5 rounded-full blur-3xl pointer-events-none" />
               <div>
@@ -367,7 +351,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Value Prop 2: Instructors Who've Done the Work */}
             <div className="rounded-2xl bg-navy-800/60 border border-navy-700/70 p-8 flex flex-col justify-between hover:border-navy-600 transition-colors shadow-lg shadow-navy-950/30">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center text-accent-400 mb-6">
@@ -382,7 +365,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Value Prop 3: No Wasted Modules */}
             <div className="rounded-2xl bg-navy-800/40 border border-navy-700/60 p-8 flex flex-col justify-between hover:border-navy-600 transition-colors shadow-lg shadow-navy-950/30">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center text-accent-400 mb-6">
@@ -397,7 +379,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Value Prop 4: Rigorous Editorial Standard */}
             <div className="rounded-2xl bg-navy-900 border border-accent-500/20 p-8 flex flex-col justify-between hover:border-accent-500/40 transition-colors shadow-lg shadow-navy-950/30 md:col-span-2">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-accent-500/10 border border-accent-500/20 flex items-center justify-center text-accent-400 mb-6">
@@ -415,9 +396,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* SECTION 4 — Social Proof */}
-      {/* ========================================================================= */}
       <section className="py-20 sm:py-28 border-t border-navy-800/80 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -430,7 +408,7 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Quote Card 1 */}
+
             <div className="rounded-2xl bg-navy-800/60 border border-navy-700/80 p-8 sm:p-10 relative flex flex-col justify-between shadow-lg shadow-navy-950/30">
               <Quote className="w-8 h-8 text-accent-500/40 mb-4" />
               <blockquote className="font-display italic text-lg sm:text-xl text-gray-200 leading-relaxed mb-8">
@@ -441,7 +419,6 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Quote Card 2 */}
             <div className="rounded-2xl bg-navy-800/60 border border-navy-700/80 p-8 sm:p-10 relative flex flex-col justify-between shadow-lg shadow-navy-950/30">
               <Quote className="w-8 h-8 text-accent-500/40 mb-4" />
               <blockquote className="font-display italic text-lg sm:text-xl text-gray-200 leading-relaxed mb-8">
@@ -455,11 +432,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* SECTION 5 — Final CTA Banner */}
-      {/* ========================================================================= */}
       <section className="relative w-full overflow-hidden border-t border-navy-800/80 bg-linear-to-b from-navy-950 via-navy-900 to-navy-950 py-16 sm:py-24 lg:py-32">
-        {/* Soft abstract ambient glow */}
+
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 sm:w-200 h-75 sm:h-100 bg-accent-500/10 blur-[140px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -490,6 +464,3 @@ export default function Landing() {
     </div>
   );
 }
-
-
-

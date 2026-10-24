@@ -26,7 +26,6 @@ import {
   Compass,
 } from 'lucide-react';
 
-// ─── CourseProgressCard ────────────────────────────────────────────────────────
 function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
   const navigate = useNavigate();
   const hasProgress = !!progress;
@@ -49,7 +48,7 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
 
   return (
     <div className="group rounded-2xl bg-gradient-to-b from-navy-900/90 to-navy-950/90 border border-navy-700/80 hover:border-accent-500/40 shadow-lg hover:shadow-xl hover:shadow-accent-500/5 transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden">
-      {/* Thumbnail */}
+
       <div className="relative w-full h-40 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 flex items-center justify-center overflow-hidden border-b border-navy-800/80">
         {thumbnail ? (
           <img
@@ -64,7 +63,6 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
           </div>
         )}
 
-        {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
           <span className="px-2 py-0.5 rounded-md bg-navy-900/90 backdrop-blur-md border border-navy-700 text-gray-300 text-[10px] font-semibold tracking-wide uppercase">
             {course.level || 'Beginner'}
@@ -84,7 +82,6 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
         ) : null}
       </div>
 
-      {/* Body */}
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-[11px] font-medium text-accent-400/90 bg-accent-500/10 px-2 py-0.5 rounded-md">
@@ -98,7 +95,7 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
 
         {hasProgress ? (
           <div className="mt-auto pt-3">
-            {/* Progress bar */}
+
             <div className="flex items-center justify-between text-xs text-gray-400 mb-1.5">
               <span>{completed} / {total} lessons completed</span>
               <span className="font-bold text-accent-400">{percent}%</span>
@@ -172,24 +169,21 @@ function CourseProgressCard({ course, progress, onEnroll, enrolling }) {
   );
 }
 
-// ─── Main Overview ─────────────────────────────────────────────────────────────
 export default function Overview() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loadingAssignments, setLoadingAssignments] = useState(true);
   const [courses, setCourses] = useState([]);
-  const [progressMap, setProgressMap] = useState({}); // courseId → progress summary
+  const [progressMap, setProgressMap] = useState({});
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [coursesError, setCoursesError] = useState(null);
-  const [enrolling, setEnrolling] = useState(null); // courseId being enrolled
+  const [enrolling, setEnrolling] = useState(null);
 
-  // Notes Search & Tab State
-  const [notesTab, setNotesTab] = useState('official'); // 'official' | 'scratchpad'
+  const [notesTab, setNotesTab] = useState('official');
   const [notesSearch, setNotesSearch] = useState('');
   const [copiedLink, setCopiedLink] = useState(null);
 
-  // Student Personal Scratchpad Note State (Saved in LocalStorage)
   const scratchpadKey = `learnova_notes_${user?.email || 'default'}`;
   const [personalNotes, setPersonalNotes] = useState(() => {
     try {
@@ -200,12 +194,10 @@ export default function Overview() {
   });
   const [noteSavedFeedback, setNoteSavedFeedback] = useState(false);
 
-  // Profile completion
   const profileFields = [user?.name, user?.email, user?.phone, user?.address, user?.interestedIn];
   const filledFields = profileFields.filter(Boolean).length;
   const profileCompletion = Math.round((filledFields / profileFields.length) * 100);
 
-  // Fetch assignments
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -222,7 +214,6 @@ export default function Overview() {
     fetch();
   }, [user?.email]);
 
-  // Fetch courses + progress decoupled with Promise.allSettled
   useEffect(() => {
     const fetchCoursesAndProgress = async () => {
       try {
@@ -234,7 +225,6 @@ export default function Overview() {
           getAllProgress(),
         ]);
 
-        // 1. Process courses
         if (coursesResult.status === 'fulfilled') {
           const allCourses = coursesResult.value.data?.data || [];
           setCourses(allCourses);
@@ -243,7 +233,6 @@ export default function Overview() {
           setCoursesError('Failed to load courses. Please refresh.');
         }
 
-        // 2. Process student course progress (if available)
         if (progressResult.status === 'fulfilled') {
           const allProgress = progressResult.value.data?.data || [];
           const map = {};
@@ -278,7 +267,6 @@ export default function Overview() {
     }
   };
 
-  // Save personal notes to localStorage
   const handleSavePersonalNotes = (val) => {
     setPersonalNotes(val);
     try {
@@ -306,11 +294,9 @@ export default function Overview() {
     document.body.removeChild(element);
   };
 
-  // Separate courses into: in-progress + not-started
   const startedCourses = courses.filter((c) => progressMap[c._id?.toString()]);
   const notStartedCourses = courses.filter((c) => !progressMap[c._id?.toString()]);
 
-  // Aggregate all official course notes
   const allCourseNotes = useMemo(() => {
     return courses
       .filter((c) => Array.isArray(c.resources) && c.resources.length > 0)
@@ -326,7 +312,6 @@ export default function Overview() {
       );
   }, [courses]);
 
-  // Filter notes based on search query
   const filteredNotes = useMemo(() => {
     if (!notesSearch.trim()) return allCourseNotes;
     const q = notesSearch.toLowerCase();
@@ -341,9 +326,9 @@ export default function Overview() {
 
   return (
     <div className="space-y-8 pb-10">
-      {/* ── Welcome Hero Banner ── */}
+
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-navy-950 via-navy-900 to-navy-850 border border-navy-700/80 p-6 sm:p-8 shadow-2xl">
-        {/* Glow Effects */}
+
         <div className="absolute top-0 right-0 w-80 h-80 bg-accent-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -390,9 +375,8 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* ── Stats Grid (4 Modern Stat Cards) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Assignments Submitted */}
+
         <div className="p-5 rounded-2xl bg-gradient-to-br from-navy-900/90 to-navy-950/90 border border-navy-750/80 shadow-md">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -410,7 +394,6 @@ export default function Overview() {
           </p>
         </div>
 
-        {/* Courses Started */}
         <div className="p-5 rounded-2xl bg-gradient-to-br from-navy-900/90 to-navy-950/90 border border-navy-750/80 shadow-md">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -428,7 +411,6 @@ export default function Overview() {
           </p>
         </div>
 
-        {/* Study Notes Available */}
         <a
           href="#course-notes"
           className="p-5 rounded-2xl bg-gradient-to-br from-navy-900/90 to-navy-950/90 border border-navy-750/80 hover:border-emerald-500/40 shadow-md transition-all group block"
@@ -450,7 +432,6 @@ export default function Overview() {
           </p>
         </a>
 
-        {/* Profile Completion */}
         <div className="p-5 rounded-2xl bg-gradient-to-br from-navy-900/90 to-navy-950/90 border border-navy-750/80 shadow-md">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -472,7 +453,6 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* ── My Courses Section ── */}
       <div className="rounded-3xl bg-navy-950/70 border border-navy-750/80 p-6 sm:p-7 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
@@ -503,7 +483,7 @@ export default function Overview() {
           </div>
         ) : (
           <div className="space-y-7">
-            {/* Started / In-progress courses */}
+
             {startedCourses.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -526,7 +506,6 @@ export default function Overview() {
               </div>
             )}
 
-            {/* Available courses */}
             {notStartedCourses.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -560,7 +539,6 @@ export default function Overview() {
         )}
       </div>
 
-      {/* ── NEW: Course Notes & Study Material Section ── */}
       <div id="course-notes" className="rounded-3xl bg-navy-950/70 border border-navy-750/80 p-6 sm:p-7 shadow-xl scroll-mt-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -577,7 +555,6 @@ export default function Overview() {
             </p>
           </div>
 
-          {/* Tab Selector */}
           <div className="flex items-center p-1 rounded-xl bg-navy-900 border border-navy-750 text-xs">
             <button
               onClick={() => setNotesTab('official')}
@@ -607,10 +584,9 @@ export default function Overview() {
           </div>
         </div>
 
-        {/* Tab 1: Official Course Notes */}
         {notesTab === 'official' && (
           <div className="space-y-4">
-            {/* Search Filter Bar */}
+
             {allCourseNotes.length > 0 && (
               <div className="relative max-w-md">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -705,7 +681,6 @@ export default function Overview() {
           </div>
         )}
 
-        {/* Tab 2: Interactive Student Scratchpad */}
         {notesTab === 'scratchpad' && (
           <div className="rounded-2xl bg-navy-900/80 border border-navy-750 p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -772,7 +747,6 @@ export default function Overview() {
         )}
       </div>
 
-      {/* ── Recent Submissions Section ── */}
       <div className="rounded-3xl bg-navy-950/70 border border-navy-750/80 p-6 sm:p-7 shadow-xl">
         <div className="flex items-center justify-between mb-5">
           <div>
