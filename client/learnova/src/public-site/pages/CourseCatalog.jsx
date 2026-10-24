@@ -50,18 +50,8 @@ export default function CourseCatalog() {
   const difficulties = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
   const filteredCourses = useMemo(() => {
-    return courses.filter((course) => {
-      const term = searchTerm.trim().toLowerCase();
-      const title = (course.title || '').toLowerCase();
-      const desc = (course.shortDescription || course.description || '').toLowerCase();
-      const tags = (course.tags || []).join(' ').toLowerCase();
-
-      const matchesSearch =
-        term === '' ||
-        title.includes(term) ||
-        desc.includes(term) ||
-        tags.includes(term);
-
+    const term = searchTerm.trim().toLowerCase();
+    const matchingFilters = courses.filter((course) => {
       const level = course.level || course.difficulty || '';
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
@@ -70,7 +60,23 @@ export default function CourseCatalog() {
       const matchesCategory =
         selectedCategory === 'All' || course.category === selectedCategory;
 
-      return matchesSearch && matchesDifficulty && matchesCategory;
+      return matchesDifficulty && matchesCategory;
+    });
+
+    if (!term) return matchingFilters;
+
+    const titleMatches = matchingFilters.filter((course) =>
+      (course.title || '').toLowerCase().includes(term)
+    );
+
+    // Prefer matching course names so a JavaScript search doesn't also return
+    // courses that only mention JavaScript in their descriptions.
+    if (titleMatches.length > 0) return titleMatches;
+
+    return matchingFilters.filter((course) => {
+      const desc = (course.shortDescription || course.description || '').toLowerCase();
+      const tags = (course.tags || []).join(' ').toLowerCase();
+      return desc.includes(term) || tags.includes(term);
     });
   }, [courses, searchTerm, selectedDifficulty, selectedCategory]);
 
